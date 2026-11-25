@@ -1,5 +1,5 @@
 # security: Specification
-Status: draft (session 05, 2026-11-25)
+Status: approved (session 05, 2026-11-25)
 Implements: FR-IN-05, FR-API-05 (auth part), FR-SEC-01..05, FR-ERR-05, NFR-02, NFR-04, EC-15..19, AC-04
 
 ## 1. Responsibility
