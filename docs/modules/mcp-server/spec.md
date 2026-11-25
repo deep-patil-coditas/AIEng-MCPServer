@@ -1,5 +1,5 @@
 # mcp-server: Specification
-Status: draft (session 09, 2026-11-25)
+Status: approved (session 09, 2026-11-25)
 Implements: FR-MCP-01..07, NFR-01, NFR-02, NFR-06, EC-21, EC-22, AC-06, AC-07, AC-08
 
 ## 1. Responsibility
