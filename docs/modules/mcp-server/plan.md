@@ -1,5 +1,5 @@
 # mcp-server: Implementation plan
-Status: draft (session 11, 2026-11-25)
+Status: approved (session 11, 2026-11-25)
 Derived from: `docs/modules/mcp-server/spec.md` (approved, `469adf6`) and `docs/modules/mcp-server/test.md` (approved, `4a38557`)
 
 This plan adds the new Maven module `product-mcp-server`. It changes no backend code. The only file outside the new
