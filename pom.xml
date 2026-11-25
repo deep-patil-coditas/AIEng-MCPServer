@@ -23,5 +23,6 @@
 
     <modules>
         <module>product-backend</module>
+        <module>product-mcp-server</module>
     </modules>
 </project>
