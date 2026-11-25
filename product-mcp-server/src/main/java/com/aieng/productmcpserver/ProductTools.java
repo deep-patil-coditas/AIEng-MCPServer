@@ -1,7 +1,9 @@
 package com.aieng.productmcpserver;
 
 import java.math.BigDecimal;
+import java.util.function.Supplier;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.ai.tool.annotation.Tool;
 import org.springframework.ai.tool.annotation.ToolParam;
@@ -30,14 +32,14 @@ public class ProductTools {
                     + "each with id, name, description, price and quantity.",
             resultConverter = RawTextResultConverter.class)
     public String listProducts() {
-        throw new UnsupportedOperationException();
+        return call(() -> json(client.list()));
     }
 
     @Tool(name = "get_product",
             description = "Get one product by its id. Returns the product as JSON, or an error if no product has that id.",
             resultConverter = RawTextResultConverter.class)
     public String getProduct(@ToolParam(description = ID) Long id) {
-        throw new UnsupportedOperationException();
+        return call(() -> json(client.get(requireId(id))));
     }
 
     @Tool(name = "create_product",
@@ -48,7 +50,7 @@ public class ProductTools {
                                 @ToolParam(required = false, description = DESCRIPTION) String description,
                                 @ToolParam(description = PRICE) BigDecimal price,
                                 @ToolParam(description = QUANTITY) Integer quantity) {
-        throw new UnsupportedOperationException();
+        return call(() -> json(client.create(new ProductInput(name, description, price, quantity))));
     }
 
     @Tool(name = "update_product",
@@ -61,7 +63,7 @@ public class ProductTools {
                                 @ToolParam(required = false, description = DESCRIPTION) String description,
                                 @ToolParam(description = PRICE) BigDecimal price,
                                 @ToolParam(description = QUANTITY) Integer quantity) {
-        throw new UnsupportedOperationException();
+        return call(() -> json(client.update(requireId(id), new ProductInput(name, description, price, quantity))));
     }
 
     @Tool(name = "delete_product",
@@ -69,6 +71,40 @@ public class ProductTools {
                     + "with ADMIN credentials; otherwise the backend refuses with 401 or 403.",
             resultConverter = RawTextResultConverter.class)
     public String deleteProduct(@ToolParam(description = ID) Long id) {
-        throw new UnsupportedOperationException();
+        return call(() -> {
+            client.delete(requireId(id));
+            return "Product " + id + " deleted";
+        });
+    }
+
+    /** A missing id fails without an HTTP call, since no URL can be built (S10, MD-06). */
+    private static Long requireId(Long id) {
+        if (id == null) {
+            throw new ProductApiException("id is required");
+        }
+        return id;
+    }
+
+    /** Boot's ObjectMapper: null description written out, BigDecimal scale kept (S16). */
+    private String json(Object value) {
+        try {
+            return objectMapper.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e.getOriginalMessage(), e);
+        }
+    }
+
+    /**
+     * Our exceptions pass through; anything else becomes "Unexpected error: ..." (S14). Spring AI turns the
+     * thrown exception into a CallToolResult with isError true and the message as its only text.
+     */
+    private String call(Supplier<String> work) {
+        try {
+            return work.get();
+        } catch (ProductApiException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new ProductApiException("Unexpected error: " + e.getMessage());
+        }
     }
 }
