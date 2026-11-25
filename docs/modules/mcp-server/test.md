@@ -1,5 +1,5 @@
 # mcp-server: Test cases
-Status: draft (session 10, 2026-11-25)
+Status: approved (session 10, 2026-11-25)
 Derived from: `docs/modules/mcp-server/spec.md` (approved, commit `469adf6`)
 
 ## Test location and fixtures
