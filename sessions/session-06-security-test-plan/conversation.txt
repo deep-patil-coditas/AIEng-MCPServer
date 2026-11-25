@@ -1,0 +1,313 @@
+Session folder : session-06-security-test-plan
+Session id     : 7aa74d59-7fc8-4026-82ce-2440c68b0d65
+Started        : 2026-11-25T06:38:45.442Z
+Exported       : 2026-11-25T06:42:31.331Z
+================================================================================
+
+USER:
+start session 06, write the security test plan
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Skill]
+{
+  "skill": "sdd-workflow",
+  "args": "start session 06, write the security test plan (docs/modules/security/test.md)"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Launching skill: sdd-workflow
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && node ~/.claude/skills/sdd-workflow/scripts/sdd-status.mjs; ls docs docs/modules/*; ls sessions",
+  "description": "Show SDD status and docs layout"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+CLAUDE.md      : yes
+requirements.md: yes
+export tool    : yes
+modules (from CLAUDE.md):
+  product        spec test plan
+  security       spec - -
+  mcp-server     - - -
+last session   : session-05-security-spec
+this session   : 06
+next doc step  : write docs/modules/security/test.md (or implement earlier modules first — check code)
+docs:
+modules
+requirements.md
+
+docs/modules/product:
+plan.md
+spec.md
+test.md
+
+docs/modules/security:
+spec.md
+session-01-project-setup
+session-02-product-spec-and-tests
+session-03-product-plan
+session-04-product-implementation
+session-05-security-spec
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/modules/security/spec.md; echo ======; tail -n 80 sessions/session-05-security-spec/conversation.txt",
+  "description": "Read security spec and last session tail"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/modules/product/test.md; echo =====; grep -n -i -E \"security|auth|admin|NFR|AC-|EC-\" docs/requirements.md; echo ====; sed -n '/^## Test Plan\\|^## test.md/,/^## /p' ~/.claude/skills/sdd-workflow/references/templates.md | head -60; find . -path ./node_modules -prune -o -name \"*.java\" -path \"*test*\" -print",
+  "description": "Read product test plan, requirements, template"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# security: Specification
+Status: approved (session 05, 2026-11-25)
+Implements: FR-IN-05, FR-API-05 (auth part), FR-SEC-01..05, FR-ERR-05, NFR-02, NFR-04, EC-15..19, AC-04
+
+## 1. Responsibility
+
+The `security` module adds Spring Security to `product-backend`. It covers:
+
+- the `SecurityFilterChain`: HTTP Basic, stateless sessions, CSRF disabled
+- the two in-memory users (`admin` / ADMIN, `user` / USER) with BCrypt-encoded passwords
+- the authorization rule: only `DELETE /api/products/**` needs the `ADMIN` role; every other request is open
+- ProblemDetail bodies for the 401 and 403 responses the security layer produces
+
+It does **not** change any product behaviour. Once a request passes the filter chain, the `product` module
+(PRODUCT-S01..S19) handles it exactly as before. It also doesn't cover how the MCP server sends credentials
+(`mcp-server` module).
+
+## 2. Public interface
+
+Package: `com.aieng.productbackend.security`.
+
+```java
+@Configuration @EnableWebSecurity
+class SecurityConfig {
+    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                  ProblemDetailAuthenticationEntryPoint entryPoint,
+                                                  ProblemDetailAccessDeniedHandler accessDeniedHandler);
+    @Bean PasswordEncoder passwordEncoder();            // BCryptPasswordEncoder
+    @Bean UserDetailsService userDetailsService(PasswordEncoder encoder);
+                                                        // InMemoryUserDetailsManager with admin and user
+}
+
+// Writes the 401 ProblemDetail (SECURITY-S04, S05)
+@Component
+class ProblemDetailAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    void commence(HttpServletRequest req, HttpServletResponse res, AuthenticationException ex);
+}
+
+// Writes the 403 ProblemDetail (SECURITY-S06)
+@Component
+class ProblemDetailAccessDeniedHandler implements AccessDeniedHandler {
+    void handle(HttpServletRequest req, HttpServletResponse res, AccessDeniedException
+... [truncated 14771 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# product: Test cases
+Status: approved (session 03, 2026-11-25)
+Derived from: `docs/modules/product/spec.md` (approved, commit `3cce158`)
+
+## Test location and fixtures
+
+All tests live in `product-backend/src/test/java/com/aieng/productbackend/product/`.
+
+| Class | Kind | Covers |
+|-------|------|--------|
+| `ProductApiIntegrationTest` | `@SpringBootTest` + `@AutoConfigureMockMvc`, real H2 and seed data | T01–T38 |
+| `ProductRequestTest` | plain JUnit 5 unit test | T39–T42 |
+| `ProductControllerErrorTest` | `@WebMvcTest(ProductController.class)` with a mocked `ProductService` (`@MockitoBean`) | T43 |
+
+**State reset:** before every integration test, `@Sql(scripts = "/reset-products.sql", executionPhase = BEFORE_TEST_METHOD)`
+runs. It truncates `product`, restarts the identity at 1 and re-inserts the 3 seed rows, so every test starts with
+ids 1–3 and the next generated id is 4. (`@Transactional` rollback can't be used because identity values aren't rolled back.)
+
+**Seed data** (FR-PROD-05):
+
+| id | name | description | price | quantity |
+|----|------|-------------|-------|----------|
+| 1 | Wireless Mouse | 2.4 GHz wireless mouse, black | 799.00 | 25 |
+| 2 | Mechanical Keyboard | Blue switches, full size | 2499.00 | 10 |
+| 3 | USB-C Hub | 6-in-1 hub with HDMI | 1299.50 | 0 |
+
+**Naming:** each test method starts with its ID, e.g. `void T01_createValidProduct_returns201WithLocation()`.
+JSON bodies below use a shorthand; the tests send real JSON with `Content-Type: application/json`.
+"ProblemDetail" means `Content-Type: application/problem+json`. Prices are compared as JSON numbers with 2 decimals.
+
+## Happy paths
+
+| ID | Spec rule(s) | Given | When | Then | Data |
+|----|--------------|-------|------|------|------|
+| PRODUCT-T01 | S01, S06 | Seed data | `POST /api/products` | 201. `Location: /api/products/4`. Body `{id:4, name:"Laptop Stand", description:null, price:1599.00, quantity:7}` | `{name:"Laptop Stand", price:1599.00, quantity:7}` (AC-02) |
+| PRODUCT-T02 | S01 | 
+... [truncated 17224 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -n -E \"class |@SpringBootTest|@AutoConfigure|@WebMvcTest|@Sql|delete\\(|@Import|MockitoBean\" product-backend/src/test/java/com/aieng/productbackend/product/*.java; grep -n -A3 \"security\\|artifactId\" product-backend/pom.xml | head -60; ls product-backend/src/main/java/com/aieng/productbackend/ product-backend/src/test/resources",
+  "description": "Inspect existing tests and dependencies"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:34:@SpringBootTest
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:35:@AutoConfigureMockMvc
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:36:@Sql(scripts = "/reset-products.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:37:class ProductApiIntegrationTest {
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:155:            mockMvc.perform(delete(PRODUCTS + "/" + id)).andExpect(status().isNoContent());
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:233:        mockMvc.perform(delete(PRODUCTS + "/2"))
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:244:        mockMvc.perform(delete(PRODUCTS + "/3")).andExpect(status().isNoContent());
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:518:        mockMvc.perform(delete(PRODUCTS + "/999"))
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java:7:import org.springframework.test.context.bean.override.mockito.MockitoBean;
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java:19:@WebMvcTest(ProductController.class)
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java:20:class ProductControllerErrorTest {
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java:25:    @MockitoBean
+product-backend/src/test/java/com/aieng/productbackend/product/ProductRequestTest.java:10:class ProductRequestTest {
+9:        <artifactId>aieng-mcpserver</artifactId>
+10-        <version>0.0.1-SNAPSHOT</version>
+11-    </p
+... [truncated 1209 chars]
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Session 06 is **security test plan** (`docs/modules/security/test.md`). The spec is approved with SECURITY-S01..S10, and nothing was left open from session 05. One gap question before I write it:
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q1/1: How should the security tests send credentials? The spec's authorization matrix (§4) has 7 requests × 4 callers (anonymous, user/user123, admin/admin123, admin/wrong) = 28 cells, and rules like S03 (BCrypt users) and S05 (wrong password → 401) only hold if the real users are hit.",
+      "header": "Test creds",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Real Basic + matrix (Recommended)",
+          "description": "@SpringBootTest + MockMvc sending real `httpBasic(\"user\",\"user123\")` headers through the real filter chain; targeted tests per rule PLUS one parameterized test covering all 28 matrix cells."
+        },
+        {
+          "label": "Real Basic, targeted only",
+          "description": "Same real-credential tests per rule and edge case, but no full 28-cell matrix test; matrix cells are covered only where a rule names them."
+        },
+        {
+          "label": "@WithMockUser + few real",
+          "description": "Mostly `@WithMockUser(roles=\"ADMIN\")` (skips password checking), with a handful of real-Basic tests for S03/S05 only."
+        },
+        {
+          "label": "Real HTTP server",
+          "description": "@SpringBootTest(RANDOM_PORT) with TestRestTemplate over a real socket instead of MockMvc; slower but closest to production."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q1/1: How should the security tests send credentials? The spec's authorization matrix (§4) has 7 requests × 4 callers (anonymous, user/user123, admin/admin123, admin/wrong) = 28 cells, and rules like S03 (BCrypt users) and S05 (wrong password → 401) only hold if the real users are hit."="Real Basic + matrix (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\security\\test.md",
+  "content": "# security: Test cases\nStatus: draft (session 06, 2026-11-25)\nDerived from: `docs/modules/security/spec.md` (approved, commit `6308c07`)\n\n## Test location and fixtures\n\nAll new tests live in `product-backend/src/test/java/com/aieng/productbackend/security/`.\n\n| Class | Kind | Covers |\n|-------|------|--------|\n| `SecurityApiIntegrationTest` | `@SpringBootTest` + `@AutoConfigureMockMvc`, real filter chain, real H2 and seed data | T01–T07, T09–T24 |\n| `SecurityMatrixIntegrationTest` | Same setup, one `@ParameterizedTest` over the spec §4 authorization matrix | T25 |\n| `SecurityUsersTest` | `@SpringBootTest` (no MockMvc); autowires `UserDetailsService` and `PasswordEncoder` | T08 |\n\n**Credentials:** every authenticated request sends a real `Authorization: Basic …` header built with\n`SecurityMockMvcRequestPostProcessors.httpBasic(username, password)` from `spring-security-test`, so it goes through\n`BasicAuthenticationFilter` and the real in-memory users. `@WithMockUser` is **not** used. \"Anonymous\" means no\n`Authorization` header at all. Raw headers (`Basic !!!`, `Bearer abc`) are set with `.header(\"Authorization\", …)`.\n\n**CSRF:** no test adds `.with(csrf())`. Passing without a token is part of what S09 checks.\n\n**State reset:** the same `@Sql(scripts = \"/reset-products.sql\", executionPhase = BEFORE_TEST_METHOD)` as the pr
+... [truncated 10796 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\security\test.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add docs/modules/security/test.md && git commit -q -m \"docs(security): add test plan\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1 && git remote -v",
+  "description": "Commit security test plan"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'docs/modules/security/test.md', LF will be replaced by CRLF the next time Git touches it
+c0dce9d docs(security): add test plan
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I've written the security test plan for session 06 and committed it to `main` as `c0dce9d` (`docs/modules/security/test.md`). It's marked draft until you approve it. There's no remote, so nothing was pushed.
+
+**What it covers:** 25 tests, SECURITY-T01 to T25, and every spec rule S01–S10 has at least one test.
+- **Open endpoints (T01–T04):** anyone can list, create and update without a login, and an unknown path gives a normal 404.
+- **Admin delete (T05–T07):** T05 runs the full AC-04 sequence on product 2: 401 with no login, 403 as `user`, 204 as `admin`, then 404 on the next `GET`. Admin deleting id 999 gets 404, and id `abc` gets 400.
+- **Users (T08–T09):** both users are stored as BCrypt hashes with the right roles, and a password typed in the wrong case gets 401.
+- **401 and 403 (T10–T16):** wrong password, unknown user, a garbled login header, and a `user` trying to delete. Each test also checks that nothing was created or deleted.
+- **Error bodies (T17–T18):** every field of the 401 and 403 error bodies is checked against the exact text.
+- **Role check before lookup (T19–T21):** a `user` deleting id 999 or `abc` gets 403, and an anonymous caller deleting id 999 gets 401.
+- **No sessions or CSRF token (T22–T23):** no session cookie is set and none is created, and create, update and delete all work without a CSRF token.
+- **Bearer token (T24):** a `Bearer` header is ignored and the request counts as anonymous.
+- **Full table (T25):** one parameterized test runs all 28 combinations from the spec's §4 table (7 requests × 4 callers).
+
+**Your answer:**
+1. **How tests log in:** they send real `user`/`admin` logins through the real security setup, not `@WithMockUser`. Each rule gets its own tests, and T25 adds the full 28-case table.
+
+**Decided without asking (veto any of these):**
+- **Test data:** the existing reset script re-seeds products 1–3 before every test, including each of T25's 28 runs.
+- **"Nothing deleted or created" check:** after each rejected request, an anonymous `GET` confirms the data didn't change.
+- **Exact text checks:** only T17 and T18 compare every field of the error body. The other 401/403 tests check the status, the login-challenge header and the error message.
+- **Changes to existing product tests:** the DELETE calls in PRODUCT-T04, T10, T11 and T36 will send the `admin` login.
+- **Product test T43:** it uses a reduced test setup (`@WebMvcTest`), so it will load the real security configuration. Without it, Spring Boot's default security would return 401 instead of the 500 the test expects.
+- **Not tested:** Spring's default security headers and username case, as the spec already decided (SD-07, SD-09).
+
+I didn't change `CLAUDE.md`, because no decision this session affects other modules.
+
+Tell me what to change, or approve it and I'll mark it approved. The next step is `docs/modules/security/plan.md`. Say "end the session" when you want me to export the session log.
+
+--------------------------------------------------------------------------------
+
+USER:
+approve the test plan and end this session here
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"/c/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -i 's/^Status: draft (session 06, 2026-11-25)/Status: approved (session 06, 2026-11-25)/' docs/modules/security/test.md && head -2 docs/modules/security/test.md && git add docs/modules/security/test.md && git commit -q -m \"docs(security): mark test plan approved\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1",
+  "description": "Mark security test plan approved and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# security: Test cases
+Status: approved (session 06, 2026-11-25)
+warning: in the working copy of 'docs/modules/security/test.md', LF will be replaced by CRLF the next time Git touches it
+c371c28 docs(security): mark test plan approved
+[This command modified 1 file you've previously read: docs\modules\security\test.md. Call Read before editing.]
