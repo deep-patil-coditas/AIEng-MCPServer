@@ -1,5 +1,5 @@
 # security: Implementation plan
-Status: draft (session 07, 2026-11-25)
+Status: approved (session 07, 2026-11-25)
 Derived from: `docs/modules/security/spec.md` (approved, `6308c07`) and `docs/modules/security/test.md` (approved, `c371c28`)
 
 This plan adds Spring Security to `product-backend`. It changes no product behaviour. The only product files it
