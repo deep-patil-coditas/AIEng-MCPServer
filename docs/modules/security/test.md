@@ -1,5 +1,5 @@
 # security: Test cases
-Status: draft (session 06, 2026-11-25)
+Status: approved (session 06, 2026-11-25)
 Derived from: `docs/modules/security/spec.md` (approved, commit `6308c07`)
 
 ## Test location and fixtures
