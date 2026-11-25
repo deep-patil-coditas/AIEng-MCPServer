@@ -2,9 +2,10 @@ package com.aieng.productbackend.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,13 +18,25 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Skeleton (plan step 1): permit-all chain until the real rules land in step 3.
+    /**
+     * Only {@code DELETE /api/products/**} needs ADMIN (S02, S08); everything else is open (S01). The 401 entry point
+     * is set on both {@code httpBasic} (bad credentials, S05) and {@code exceptionHandling} (anonymous, S04).
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   ProblemDetailAuthenticationEntryPoint entryPoint,
+                                                   ProblemDetailAccessDeniedHandler accessDeniedHandler)
+            throws Exception {
         http
-                .csrf(csrf -> csrf.disable())
-                .httpBasic(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .csrf(csrf -> csrf.disable())                                                  // S09
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // S09
+                .httpBasic(basic -> basic.authenticationEntryPoint(entryPoint))                // S03, S05
+                .exceptionHandling(e -> e
+                        .authenticationEntryPoint(entryPoint)                                  // S04
+                        .accessDeniedHandler(accessDeniedHandler))                             // S06
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN") // S02, S08
+                        .anyRequest().permitAll());                                            // S01
         return http.build();
     }
 
