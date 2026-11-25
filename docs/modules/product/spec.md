@@ -1,5 +1,5 @@
 # product: Specification
-Status: draft (session 02, 2026-11-25)
+Status: approved (session 02, 2026-11-25)
 Implements: FR-IN-01..04, FR-API-01..05 (non-security part), FR-PROD-01..05, FR-ERR-01..04, NFR-01..03, NFR-05, EC-01..14, EC-20, AC-01..03, AC-05
 
 ## 1. Responsibility
