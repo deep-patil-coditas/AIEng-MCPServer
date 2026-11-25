@@ -52,6 +52,7 @@ Rules:
 - **MCP server:** a separate Maven module. It calls the backend over HTTP and sends Basic credentials from configuration.
 - **Errors:** RFC 7807 ProblemDetail everywhere. Validation failures return 400 with an `errors` map (field → message) listing all invalid fields.
 - **Names and update:** duplicate names are allowed. `PUT` is a full replace with the same validation as create, and an unknown id returns 404 (no upsert).
+- **Input handling (session 02):** `name`/`description` are trimmed before validation, and a blank description becomes `null`. JSON typing is strict (`quantity:1.5` or `price:"10.00"` returns 400 with an `errors` entry). An id <= 0 returns 404 like any unknown id.
 - **Seed data:** 3 products via `data.sql` (ids 1–3: Wireless Mouse, Mechanical Keyboard, USB-C Hub). New ids start at 4.
 - **Security edge cases:** wrong credentials return 401 even on open endpoints. Authorization runs before lookup, so a USER deleting an unknown id gets 403.
 - **MCP tools:** `list_products`, `get_product`, `create_product`, `update_product`, `delete_product`.
