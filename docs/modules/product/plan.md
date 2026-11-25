@@ -1,5 +1,5 @@
 # product: Implementation plan
-Status: draft (session 03, 2026-11-25)
+Status: approved (session 03, 2026-11-25)
 Derived from: `docs/modules/product/spec.md` (approved, `3cce158`) and `docs/modules/product/test.md` (`d8c24be`)
 
 This plan covers the build skeleton (root Maven project + `product-backend`) and the `product` module. The

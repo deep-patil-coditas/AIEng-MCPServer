@@ -1,5 +1,5 @@
 # product: Test cases
-Status: draft (session 02, 2026-11-25)
+Status: approved (session 03, 2026-11-25)
 Derived from: `docs/modules/product/spec.md` (approved, commit `3cce158`)
 
 ## Test location and fixtures
