@@ -55,6 +55,7 @@ Rules:
 - **Input handling (session 02):** `name`/`description` are trimmed before validation, and a blank description becomes `null`. JSON typing is strict (`quantity:1.5` or `price:"10.00"` returns 400 with an `errors` entry). An id <= 0 returns 404 like any unknown id.
 - **Seed data:** 3 products via `data.sql` (ids 1–3: Wireless Mouse, Mechanical Keyboard, USB-C Hub). New ids start at 4.
 - **Security edge cases:** wrong credentials return 401 even on open endpoints. Authorization runs before lookup, so a USER deleting an unknown id gets 403.
+- **Security scope and errors (session 05):** only `DELETE /api/products/**` is protected; every other path (including ones outside `/api/products`) is open. 401 is `Unauthorized` / `Authentication required` (same for anonymous and bad credentials); 403 is `Forbidden` / `Access Denied`.
 - **MCP tools:** `list_products`, `get_product`, `create_product`, `update_product`, `delete_product`.
   - Credentials come from the env vars `PRODUCT_API_BASE_URL`, `PRODUCT_API_USERNAME` and `PRODUCT_API_PASSWORD`.
   - Backend errors come back as tool errors (`<status>: <detail>`).
