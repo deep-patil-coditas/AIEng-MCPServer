@@ -50,6 +50,13 @@ Rules:
 - **Auth:** HTTP Basic with in-memory users `admin/admin123` (ADMIN) and `user/user123` (USER). Every endpoint except DELETE is open to anyone, including unauthenticated callers.
 - **Storage:** H2 in-memory with Spring Data JPA. Data resets on restart.
 - **MCP server:** a separate Maven module. It calls the backend over HTTP and sends Basic credentials from configuration.
+- **Errors:** RFC 7807 ProblemDetail everywhere. Validation failures return 400 with an `errors` map (field → message) listing all invalid fields.
+- **Names and update:** duplicate names are allowed. `PUT` is a full replace with the same validation as create, and an unknown id returns 404 (no upsert).
+- **Seed data:** 3 products via `data.sql` (ids 1–3: Wireless Mouse, Mechanical Keyboard, USB-C Hub). New ids start at 4.
+- **Security edge cases:** wrong credentials return 401 even on open endpoints. Authorization runs before lookup, so a USER deleting an unknown id gets 403.
+- **MCP tools:** `list_products`, `get_product`, `create_product`, `update_product`, `delete_product`.
+  - Credentials come from the env vars `PRODUCT_API_BASE_URL`, `PRODUCT_API_USERNAME` and `PRODUCT_API_PASSWORD`.
+  - Backend errors come back as tool errors (`<status>: <detail>`).
 
 ## Git workflow
 
