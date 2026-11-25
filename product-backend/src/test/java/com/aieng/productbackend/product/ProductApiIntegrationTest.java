@@ -9,7 +9,9 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.httpBasic;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -37,6 +39,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ProductApiIntegrationTest {
 
     private static final String PRODUCTS = "/api/products";
+    /** DELETE needs ADMIN since the security module (spec SD-08). */
+    private static final RequestPostProcessor ADMIN = httpBasic("admin", "admin123");
     private static final String PEN = """
             {"name":"Pen","price":10,"quantity":1}""";
 
@@ -152,7 +156,7 @@ class ProductApiIntegrationTest {
     @Test
     void T04_deleteAll_thenListIsEmpty() throws Exception {
         for (long id = 1; id <= 3; id++) {
-            mockMvc.perform(delete(PRODUCTS + "/" + id)).andExpect(status().isNoContent());
+            mockMvc.perform(delete(PRODUCTS + "/" + id).with(ADMIN)).andExpect(status().isNoContent());
         }
 
         getAll()
@@ -230,7 +234,7 @@ class ProductApiIntegrationTest {
     // PRODUCT-T10 (S05)
     @Test
     void T10_delete_returns204AndRemovesProduct() throws Exception {
-        mockMvc.perform(delete(PRODUCTS + "/2"))
+        mockMvc.perform(delete(PRODUCTS + "/2").with(ADMIN))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -241,7 +245,7 @@ class ProductApiIntegrationTest {
     // PRODUCT-T11 (S06)
     @Test
     void T11_idsAreNotReusedAfterDelete() throws Exception {
-        mockMvc.perform(delete(PRODUCTS + "/3")).andExpect(status().isNoContent());
+        mockMvc.perform(delete(PRODUCTS + "/3").with(ADMIN)).andExpect(status().isNoContent());
 
         postJson(PEN).andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(4));
         postJson(PEN).andExpect(status().isCreated()).andExpect(jsonPath("$.id").value(5));
@@ -515,7 +519,7 @@ class ProductApiIntegrationTest {
     // PRODUCT-T36 (S14, EC-17 ignoring auth)
     @Test
     void T36_deleteUnknownId_returns404() throws Exception {
-        mockMvc.perform(delete(PRODUCTS + "/999"))
+        mockMvc.perform(delete(PRODUCTS + "/999").with(ADMIN))
                 .andExpect(status().isNotFound())
                 .andExpect(notFound(999, "/api/products/999"));
 
