@@ -64,7 +64,7 @@ Rules:
 
 ## Git workflow
 
-- Local git repo, committing directly to `main`, with no remote yet. Push once a remote is added.
+- Committing directly to `main`. Remote `origin` is the public GitHub repo https://github.com/deep-patil-coditas/AIEng-MCPServer (added in session 14); push after each commit.
 - Conventional commits: `docs:`, `docs(<module>):`, `test(<module>):`, `feat(<module>):`, `chore:`.
 - Never commit `.idea/`, `target/`, `*.iml` or secrets.
 
