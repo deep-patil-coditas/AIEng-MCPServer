@@ -1,4 +1,594 @@
 Session folder : session-02-product-spec-and-tests
+Session id     : 9be0b2a1-7ff8-499a-94a4-ceef8c8f9669
+Started        : 2026-11-25T06:15:40.561Z
+Exported       : 2026-11-25T06:25:09.035Z
+================================================================================
+
+USER:
+go ahead and write the product spec.md
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Skill]
+{
+  "skill": "sdd-workflow",
+  "args": "write docs/modules/product/spec.md"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Launching skill: sdd-workflow
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/requirements.md && node ~/.claude/skills/sdd-workflow/scripts/sdd-status.mjs; ls sessions; ls -R docs",
+  "description": "Read requirements and SDD status"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd ~/.claude/skills/sdd-workflow/references && grep -n \"^#\" templates.md",
+  "description": "List template sections"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# AIEng-MCPServer: Requirements
+Status: approved baseline (session 01, 2026-11-25)
+
+## 1. Purpose and scope
+
+The project builds a small Product catalogue backend and then an MCP server around it, so an AI client can manage products through MCP tools.
+
+- **Phase 1, `product-backend`:** a Spring Boot REST API with CRUD on `Product`. Create, read and update are open to anyone. Delete needs the `ADMIN` role.
+- **Phase 2, `product-mcp-server`:** a separate Spring AI MCP server (stdio). It exposes the five Product operations as MCP tools by calling the backend over HTTP.
+
+**Out of scope:**
+- user registration and management
+- JWT/OAuth
+- persistent database
+- pagination, search, filtering and sorting options
+- PATCH
+- categories, images and stock movements
+- UI
+- deployment and containers
+- the H2 web console
+- HTTPS
+
+## 2. Glossary
+
+| Term | Meaning |
+|------|---------|
+| Product | A catalogue item with `id`, `name`, `description`, `price`, `quantity` |
+| ADMIN / USER | Roles of the in-memory users; only ADMIN can delete |
+| Anonymous | A request with no `Authorization` header |
+| ProblemDetail | RFC 7807 JSON error body (`type`, `title`, `status`, `detail`, `instance`) |
+| MCP tool | A function exposed by the MCP server to an AI client |
+| Seed data | The 3 products inserted at backend startup |
+
+## 3. Inputs / data formats
+
+- **FR-IN-01:** Request and response bodies are JSON (`application/json`). Error bodies are `application/problem+json`.
+- **FR-IN-02:** Product request body (create and update):
+
+  | Field | Type | Required | Rule |
+  |-------|------|----------|------|
+  | `name` | string | yes | not blank, max 100 chars |
+  | `description` | string | no | max 500 chars; missing means `null` |
+  | `price` | number (BigDecimal) | yes | > 0, at most 10 integer digits and 2 decimals |
+  | `quantity` | integer | yes | >= 0 |
+
+  Any `id` sent in a request body is ignored. Unknown JSON fields are ignored.
+- **FR-IN-03:** Product response body: `{ "id": Long, "name", "desc
+... [truncated 10965 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+1:# Doc templates
+6:## requirements.md — `docs/requirements.md`
+9:# <project> — Requirements
+12:## 1. Purpose and scope (incl. Out of scope)
+13:## 2. Glossary
+14:## 3. Inputs / data formats            FR-IN-NN
+15:## 4. Commands / endpoints / features  FR-<area>-NN (options, outputs, exit codes / status codes)
+16:## 5…n. Domain rules                   FR-<area>-NN (worked examples)
+17:## Non-functional requirements         NFR-NN
+18:## Edge cases                          | EC-NN | case | expected | sample data |
+19:## Acceptance criteria                 | AC-NN | criterion (end-to-end on the sample data) |
+20:## Decision log                        | D-NN | question | decision |
+23:## spec.md — `docs/modules/<module>/spec.md`
+26:# <module> — Specification
+30:## 1. Responsibility          (what it does and does not do)
+31:## 2. Public interface        (types, signatures, records/enums with fields)
+32:## 3. Behaviour rules
+36:## 4. Data shapes             (every field, type, nullability)
+37:## 5. Edge cases              | case | behaviour | sample data |
+38:## 6. Errors                  (what fails, how it's reported, never-crash guarantees)
+39:## 7. Out of scope
+40:## 8. Decision log
+43:## test.md — `docs/modules/<module>/test.md`
+46:# <module> — Test cases
+54:## Coverage        (every spec rule → ≥1 test; every sample file the module touches → listed)
+55:## Not tested here (covered by …)
+56:## Decision log
+59:## plan.md — `docs/modules/<module>/plan.md`
+62:# <module> — Implementation plan
+63:## 1. Classes / files     | name | location | responsibility | spec rules |
+64:## 2. Dependencies        (libraries with versions, other modules used)
+65:## 3. Steps               (each ends green or with intentionally failing tests, with its commit message)
+66:## 4. Risks / open points
+67:## 5. Definition of done  (all test.md IDs implemented and passing; spec unchanged or updated first)
+Shell cwd was reset to C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "sed -n 23,42p ~/.claude/skills/sdd-workflow/references/templates.md; cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\"; ls; git log --oneline | head; ls ~/.claude/projects/*AIEng-MCPServer* 2>/dev/null | head",
+  "description": "Read spec template and repo layout"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+## spec.md — `docs/modules/<module>/spec.md`
+
+```markdown
+# <module> — Specification
+Status: draft | approved (session NN, YYYY-MM-DD)
+Implements: FR-…, NFR-…, EC-…
+
+## 1. Responsibility          (what it does and does not do)
+## 2. Public interface        (types, signatures, records/enums with fields)
+## 3. Behaviour rules
+| ID | Rule | Requirement(s) | Example (input → result) |
+|---|---|---|---|
+| <MODULE>-S01 | … | FR-… | … |
+## 4. Data shapes             (every field, type, nullability)
+## 5. Edge cases              | case | behaviour | sample data |
+## 6. Errors                  (what fails, how it's reported, never-crash guarantees)
+## 7. Out of scope
+## 8. Decision log
+```
+
+CLAUDE.md
+docs
+sessions
+tools
+fcdb8f5 docs: add requirements
+6a5b4e8 docs: record session 01 decisions in CLAUDE.md
+d409a02 chore: initialise SDD project setup
+1ce9a19d-7799-4808-81de-141e6d9dd360.jsonl
+9be0b2a1-7ff8-499a-94a4-ceef8c8f9669.jsonl
+memory
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q1/3 — FR-IN-04 says `{id}` path variables are positive integers, but no rule covers what happens on `GET /api/products/0` or `GET /api/products/-5`. What should a zero or negative id return?",
+      "header": "Id <= 0",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "404 not found (Recommended)",
+          "description": "Treat it like any other unknown id: 404 'Product with id 0 not found'. Simplest, no extra validation."
+        },
+        {
+          "label": "400 validation error",
+          "description": "Reject with 400 ProblemDetail, e.g. 'id must be a positive number', before the lookup."
+        },
+        {
+          "label": "400 only for negatives",
+          "description": "0 gives 404 (just a missing row), while negative ids give 400."
+        },
+        {
+          "label": "Leave unspecified",
+          "description": "Don't spec it; whatever the framework does is fine."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q1/3 — FR-IN-04 says `{id}` path variables are positive integers, but no rule covers what happens on `GET /api/products/0` or `GET /api/products/-5`. What should a zero or negative id return?"="404 not found (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q2/3 — Names with surrounding spaces: `POST {name:\"  Pen  \", price:10, quantity:1}` passes the not-blank rule. How should the server store `name` (and `description`)?",
+      "header": "Trimming",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Trim both (Recommended)",
+          "description": "Store \"Pen\". The 100/500 max-length checks run on the trimmed value. A description that is blank after trimming becomes null."
+        },
+        {
+          "label": "Trim name only",
+          "description": "Name is trimmed; description is stored exactly as sent."
+        },
+        {
+          "label": "Store as sent",
+          "description": "No trimming. \"  Pen  \" is stored with its spaces, and length counts them."
+        },
+        {
+          "label": "Reject surrounding spaces",
+          "description": "400 with errors.name if the name has leading or trailing whitespace."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q2/3 — Names with surrounding spaces: `POST {name:"  Pen  ", price:10, quantity:1}` passes the not-blank rule. How should the server store `name` (and `description`)?"="Trim both (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q3/3 — Wrong JSON types: by default Jackson silently turns `quantity: 1.5` into 1 and accepts `price: \"10.00\"` (a string). How strict should the request body be?",
+      "header": "JSON types",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Strict: reject coercion (Recommended)",
+          "description": "`quantity: 1.5`, `quantity: \"5\"` and `price: \"10.00\"` all return 400 ProblemDetail naming the field. No silent truncation."
+        },
+        {
+          "label": "Reject fractions only",
+          "description": "`quantity: 1.5` gives 400, but numeric strings like \"10.00\" or \"5\" are accepted."
+        },
+        {
+          "label": "Jackson defaults",
+          "description": "Accept the coercions: 1.5 becomes 1 and \"10.00\" becomes 10.00."
+        },
+        {
+          "label": "Leave unspecified",
+          "description": "Don't spec it or test it."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q3/3 — Wrong JSON types: by default Jackson silently turns `quantity: 1.5` into 1 and accepts `price: "10.00"` (a string). How strict should the request body be?"="Strict: reject coercion (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I have all three answers. Writing the spec now.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\product\\spec.md",
+  "content": "# product: Specification\nStatus: draft (session 02, 2026-11-25)\nImplements: FR-IN-01..04, FR-API-01..05 (non-security part), FR-PROD-01..05, FR-ERR-01..04, NFR-01..03, NFR-05, EC-01..14, EC-20, AC-01..03, AC-05\n\n## 1. Responsibility\n\nThe `product` module is the Product catalogue inside `product-backend`. It covers:\n\n- the `Product` JPA entity and its H2 table, with the seed data from `data.sql`\n- `ProductRepository` (Spring Data JPA)\n- `ProductService`, which holds the business rules (create, list, get, full-replace update, delete)\n- `ProductController`, which serves the 5 endpoints under `/api/products`\n- request and response DTOs, request normalisation (trimming), Bean Validation and strict JSON typing\n- `ProblemDetail` error responses for 400, 404, 405, 415 and 500\n\nIt does **not** cover authentication or authorization. Who may call `DELETE`, the 401 and 403 responses, CSRF and\nthe session policy all belong to the `security` module. Until that module exists, `DELETE` is open to anyone.\nThis spec only defines what happens once a delete request reaches the controller.\n\n## 2. Public interface\n\nBase package: `com.aieng.productbackend.product`. Application class: `com.aieng.productbackend.ProductBackendApplication`.\n\n```java\n// JPA entity (never returned by the controller, see NFR-05)\n@Entity @Table(name = \"product\")\ncla
+... [truncated 15955 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\product\spec.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Next I'll record the three answers in CLAUDE.md's Domain decisions and commit the two changes separately.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\CLAUDE.md",
+  "old_string": "- **Seed data:**",
+  "new_string": "- **Input handling (session 02):** `name`/`description` are trimmed before validation, and a blank description becomes `null`. JSON typing is strict (`quantity:1.5` or `price:\"10.00\"` returns 400 with an `errors` entry). An id <= 0 returns 404 like any unknown id.\n- **Seed data:**"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add docs/modules/product/spec.md && git commit -q -m \"docs(product): add spec\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git add CLAUDE.md && git commit -q -m \"docs: record session 02 decisions in CLAUDE.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -3 && git remote",
+  "description": "Commit spec and CLAUDE.md separately"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\CLAUDE.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'docs/modules/product/spec.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'CLAUDE.md', LF will be replaced by CRLF the next time Git touches it
+8cff1f1 docs: record session 02 decisions in CLAUDE.md
+3143c3d docs(product): add spec
+30c3e6f chore(sessions): add session 01 conversation log
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I wrote and committed `docs/modules/product/spec.md` as session 02.
+
+**What's in it:** 19 behaviour rules (`PRODUCT-S01` to `PRODUCT-S19`). They cover the 5 endpoints, how ids are generated (the first new product gets id 4, and ids are never reused), trimming, validation, strict JSON types, 2-decimal prices, and errors returned as ProblemDetail (400, 404, 405, 415, 500). It also has the class and record signatures, the table and JSON field definitions, a table mapping each edge case (EC-01 to EC-14, EC-20, plus a few extra boundary cases) to its rule, an error table, and a decision log.
+
+**Your answers:**
+1. A zero or negative id returns 404, like any unknown id.
+2. `name` and `description` are trimmed before validation, and a blank description becomes `null`.
+3. JSON types are strict: `quantity: 1.5` or `price: "10.00"` returns 400 with an `errors` entry for that field.
+
+**Decided without asking (veto any of these):**
+- Base package is `com.aieng.productbackend.product`.
+- The `Location` header is the relative path `/api/products/{id}`, as written in AC-02.
+- On PUT, validation runs before the lookup, so an invalid body sent to an unknown id returns 400, not 404.
+- Error titles and details: `Validation failed`, `Malformed request`, `Bad Request` (with `Invalid value 'abc' for parameter 'id'`), `Not Found`, and a generic 500 (`Unexpected error`) with no stack trace.
+- Validation messages are the Bean Validation defaults, one per field.
+- Prices are always returned with 2 decimals.
+- `data.sql` inserts the seed rows without explicit ids, so the next generated id is 4.
+- Until the `security` module exists, DELETE is open to anyone.
+
+**Commits:** `3143c3d docs(product): add spec` and `8cff1f1 docs: record session 02 decisions in CLAUDE.md`. The second adds one line with your three answers. There's no remote, so nothing was pushed.
+
+A session 01 conversation log commit (`30c3e6f`) showed up in history while I was working, so I numbered this one 02. The spec is still marked **draft**. Tell me what to change, or say "approved" and I'll update the status. Next step after that is `docs/modules/product/test.md`.
+
+--------------------------------------------------------------------------------
+
+USER:
+approved, go ahead with test.md
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "sed -n 43,58p ~/.claude/skills/sdd-workflow/references/templates.md",
+  "description": "Read test.md template"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+## test.md — `docs/modules/<module>/test.md`
+
+```markdown
+# <module> — Test cases
+Derived from: docs/modules/<module>/spec.md (commit)
+Test location / fixtures: …
+
+| ID | Spec rule(s) | Given | When | Then | Data |
+|---|---|---|---|---|---|
+| <MODULE>-T01 | <MODULE>-S01 | … | … | … | sample file / inline |
+
+## Coverage        (every spec rule → ≥1 test; every sample file the module touches → listed)
+## Not tested here (covered by …)
+## Decision log
+```
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I'll mark the spec approved and commit that first.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -i 's/^Status: draft (session 02, 2026-11-25)/Status: approved (session 02, 2026-11-25)/' docs/modules/product/spec.md && head -2 docs/modules/product/spec.md && git commit -qam \"docs(product): mark spec approved\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1",
+  "description": "Mark spec approved and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# product: Specification
+Status: approved (session 02, 2026-11-25)
+warning: in the working copy of 'docs/modules/product/spec.md', LF will be replaced by CRLF the next time Git touches it
+3cce158 docs(product): mark spec approved
+[This command modified 1 file you've previously read: docs\modules\product\spec.md. Call Read before editing.]
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+The spec gives every test its expected result, so I have no new questions. Writing the test plan.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\product\\test.md",
+  "content": "# product: Test cases\nStatus: draft (session 02, 2026-11-25)\nDerived from: `docs/modules/product/spec.md` (approved, commit `3cce158`)\n\n## Test location and fixtures\n\nAll tests live in `product-backend/src/test/java/com/aieng/productbackend/product/`.\n\n| Class | Kind | Covers |\n|-------|------|--------|\n| `ProductApiIntegrationTest` | `@SpringBootTest` + `@AutoConfigureMockMvc`, real H2 and seed data | T01–T38 |\n| `ProductRequestTest` | plain JUnit 5 unit test | T39–T42 |\n| `ProductControllerErrorTest` | `@WebMvcTest(ProductController.class)` with a mocked `ProductService` (`@MockitoBean`) | T43 |\n\n**State reset:** before every integration test, `@Sql(scripts = \"/reset-products.sql\", executionPhase = BEFORE_TEST_METHOD)`\nruns. It truncates `product`, restarts the identity at 1 and re-inserts the 3 seed rows, so every test starts with\nids 1–3 and the next generated id is 4. (`@Transactional` rollback can't be used because identity values aren't rolled back.)\n\n**Seed data** (FR-PROD-05):\n\n| id | name | description | price | quantity |\n|----|------|-------------|-------|----------|\n| 1 | Wireless Mouse | 2.4 GHz wireless mouse, black | 799.00 | 25 |\n| 2 | Mechanical Keyboard | Blue switches, full size | 2499.00 | 10 |\n| 3 | USB-C Hub | 6-in-1 hub with HDMI | 1299.50 | 0 |\n\n**Naming:** each test method starts with its ID, 
+... [truncated 11884 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\product\test.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+T43 sits out of numeric order in the error table, so I'll move it into its own section to keep the IDs in order.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer/docs/modules/product\" && python - <<'EOF'\np='test.md'; s=open(p,encoding='utf-8').read()\nlines=s.split('\\n')\nt43=[l for l in lines if l.startswith('| PRODUCT-T43')][0]\nlines=[l for l in lines if l!=t43 and not l.startswith('(T43 sits')]\ns='\\n'.join(lines)\nhdr='| ID | Spec rule(s) | Given | When | Then | Data |\\n|----|--------------|-------|------|------|------|\\n'\ns=s.replace('\\n## Coverage', '## Server error\\n\\n'+hdr+t43+'\\n\\n## Coverage',1)\nopen(p,'w',encoding='utf-8').write(s)\nEOF\ngrep -n \"^## \\|T43\" test.md | head -30",
+  "description": "Move T43 to its own section"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Python was not found; run without arguments to install from the Microsoft Store, or disable this shortcut from Settings > Apps > Advanced app settings > App execution aliases.
+5:## Test location and fixtures
+13:| `ProductControllerErrorTest` | `@WebMvcTest(ProductController.class)` with a mocked `ProductService` (`@MockitoBean`) | T43 |
+31:## Happy paths
+51:## Normalisation and validation
+73:## Not found and request errors
+83:| PRODUCT-T43 | S19 | `ProductService.findAll()` mocked to throw `RuntimeException("db exploded")` | `GET /api/products` | 500 ProblemDetail, title `Internal Server Error`, detail `Unexpected error`. The body does not contain `db exploded` | `@WebMvcTest` |
+85:## Unit tests: `ProductRequest` normalisation
+94:(T43 sits in the error table above because it is an error-path test; the IDs are not in numeric order there.)
+96:## Coverage
+118:| PRODUCT-S19 | T43 |
+122:Acceptance criteria: AC-01 (T03), AC-02 (T01), AC-03 (T07, T08). AC-05 is covered for this module's errors (T19–T38, T43).
+126:## Not tested here
+135:## Decision log
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+No Python on this machine, so I'll use Edit.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\product\\test.md",
+  "old_string": "| PRODUCT-T43 | S19 | `ProductService.findAll()` mocked to throw `RuntimeException(\"db exploded\")` | `GET /api/products` | 500 ProblemDetail, title `Internal Server Error`, detail `Unexpected error`. The body does not contain `db exploded` | `@WebMvcTest` |\n",
+  "new_string": ""
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\product\\test.md",
+  "old_string": "(T43 sits in the error table above because it is an error-path test; the IDs are not in numeric order there.)\n",
+  "new_string": "## Server error\n\n| ID | Spec rule(s) | Given | When | Then | Data |\n|----|--------------|-------|------|------|------|\n| PRODUCT-T43 | S19 | `ProductService.findAll()` mocked to throw `RuntimeException(\"db exploded\")` | `GET /api/products` | 500 ProblemDetail, title `Internal Server Error`, detail `Unexpected error`. The body does not contain `db exploded` | `@WebMvcTest` |\n"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add docs/modules/product/test.md && git commit -q -m \"docs(product): add test plan\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1 && git status --short",
+  "description": "Commit test plan"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\product\test.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\product\test.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'docs/modules/product/test.md', LF will be replaced by CRLF the next time Git touches it
+d8c24be docs(product): add test plan
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I marked the spec approved and wrote and committed `docs/modules/product/test.md`. I had no new questions, because the spec already gives the expected result for every case.
+
+**What's in it:** 43 test cases (`PRODUCT-T01` to `PRODUCT-T43`), each with Given / When / Then / Data based on the seed products:
+- **Happy paths (T01–T15):** create with `Location`, list order, get, full-replace PUT, delete, ids never reused, body `id` ignored, duplicate names, 2-decimal price.
+- **Normalisation and validation (T16–T32):** trimming, the boundary cases (100/101-char name, 500/501-char description, `9999999999.99` vs `10000000000`), all-fields `errors` map, strict typing (`quantity: 1.5` / `"5"` / `true`, `price: "10.00"`).
+- **Not found and request errors (T33–T38):** 404 for 999, 0 and -5; PUT on an unknown id creates nothing; non-numeric id; malformed or missing body; validation before lookup; 405 and 415.
+- **Unit tests (T39–T42):** trimming in the `ProductRequest` constructor, including null-safety.
+- **Server error (T43):** a 500 that doesn't leak the exception message.
+- A **coverage table**: every spec rule S01–S19 has at least one test. It also maps the product-module edge cases and AC-01 to AC-03.
+- **Not tested here:** the 401/403 cases go to `security`, and the MCP cases go to `mcp-server`.
+
+**Decided without asking (veto any of these):**
+- The main tests use `@SpringBootTest` + MockMvc against real H2.
+- A `reset-products.sql` script runs before each test (truncate, restart the identity, re-seed) so id 4 is predictable. `@Transactional` rollback can't do this, because identity values aren't rolled back.
+- The 500 test uses `@WebMvcTest` with a mocked service.
+- Test methods are named `T<NN>_<behaviour>()`, and T37 is split into `T37a` to `T37d`.
+- Messages the spec fixes are asserted exactly. For the verbose default `@Size` / `@Digits` messages, tests only check that the field's key is present.
+
+**Commits:** `3cce158 docs(product): mark spec approved` and `d8c24be docs(product): add test plan`. There's no remote, so nothing was pushed.
+
+The test plan is a **draft**. Review it and say "approved" or ask for changes. Next is `docs/modules/product/plan.md`, which could be this session or the next one. When you want to wrap up, say so and I'll export the session 02 log.
+
+--------------------------------------------------------------------------------
+
+USER:
+end this session here.
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+**Session 02 summary (product spec + test plan)**
+- `docs/modules/product/spec.md`: written and **approved**. It has 19 rules, S01–S19.
+- Your decisions: an id <= 0 returns 404, `name`/`description` are trimmed, and JSON typing is strict. These are recorded in CLAUDE.md.
+- `docs/modules/product/test.md`: written as a **draft**. It has 43 tests, T01–T43, and every spec rule is covered.
+- Open item: approve test.md (or ask for changes) at the start of next session.
+- **Next session (03):** `docs/modules/product/plan.md`.
+
+Exporting the conversation log now.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && node tools/export-session.mjs session-02-product-spec-and-tests && git add sessions/ && git commit -q -m \"chore(sessions): add session 02 conversation log\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1 && ls sessions",
+  "description": "Export session log and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Wrote C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\sessions\session-02-product-spec-and-tests\conversation.txt (1 messages)
+warning: in the working copy of 'sessions/session-02-product-spec-and-tests/conversation.txt', LF will be replaced by CRLF the next time Git touches it
+dd26bbb chore(sessions): add session 02 conversation log
+session-01-project-setup
+session-02-product-spec-and-tests
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+The export reported only 1 message, which is wrong for this session. Checking what it wrote.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && wc -l sessions/*/conversation.txt && head -40 sessions/session-02-product-spec-and-tests/conversation.txt && grep -n \"jsonl\\|argv\\|readdir\\|sort\" tools/export-session.mjs | head -30",
+  "description": "Inspect exported log and export script"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+923 sessions/session-01-project-setup/conversation.txt
+    8 sessions/session-02-product-spec-and-tests/conversation.txt
+  931 total
+Session folder : session-02-product-spec-and-tests
 Session id     : c65c79f3-b559-40cb-9ce3-c298d739cb76
 Started        : 2026-11-25T06:24:56.962Z
 Exported       : 2026-11-25T06:24:58.270Z
@@ -6,3 +596,13 @@ Exported       : 2026-11-25T06:24:58.270Z
 
 USER:
 go ahead with plan.md
+21:function parseArgs(argv) {
+23:  for (let i = 0; i < argv.length; i++) {
+24:    if (argv[i] === "--session") args.session = argv[++i];
+25:    else if (!args.folder) args.folder = argv[i];
+41:  if (sessionId) return path.join(dir, `${sessionId}.jsonl`);
+43:    .readdirSync(dir)
+44:    .filter((f) => f.endsWith(".jsonl"))
+46:    .sort((a, b) => b.t - a.t);
+105:const args = parseArgs(process.argv.slice(2));
+128:  `Session id     : ${path.basename(transcript, ".jsonl")}`,
