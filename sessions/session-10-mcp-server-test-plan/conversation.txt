@@ -1,0 +1,363 @@
+Session folder : session-10-mcp-server-test-plan
+Session id     : 3b861dad-6180-4f84-9596-19f11c4974d2
+Started        : 2026-11-25T09:33:07.214Z
+Exported       : 2026-11-25T09:37:37.451Z
+================================================================================
+
+USER:
+start session 10, write the mcp-server test plan
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && ls .claude/skills 2>/dev/null; ls docs docs/modules/*; ls sessions | tail -3; git log --oneline | head -3",
+  "description": "Check repo skills, docs and sessions"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+docs:
+modules
+requirements.md
+
+docs/modules/mcp-server:
+spec.md
+
+docs/modules/product:
+plan.md
+spec.md
+test.md
+
+docs/modules/security:
+plan.md
+spec.md
+test.md
+session-07-security-plan
+session-08-security-implementation
+session-09-mcp-server-spec
+d79e0e4 chore(sessions): add session 09 conversation log
+469adf6 docs(mcp-server): mark spec approved
+2203125 docs(mcp-server): add spec
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Skill]
+{
+  "skill": "sdd-workflow",
+  "args": "start session 10, write the mcp-server test plan (test.md)"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Launching skill: sdd-workflow
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && node ~/.claude/skills/sdd-workflow/scripts/sdd-status.mjs; cat docs/modules/mcp-server/spec.md; tail -60 sessions/session-09-mcp-server-spec/conversation.txt",
+  "description": "Run SDD status, read mcp-server spec and last session tail"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+CLAUDE.md      : yes
+requirements.md: yes
+export tool    : yes
+modules (from CLAUDE.md):
+  product        spec test plan
+  security       spec test plan
+  mcp-server     spec - -
+last session   : session-09-mcp-server-spec
+this session   : 10
+next doc step  : write docs/modules/mcp-server/test.md (or implement earlier modules first — check code)
+# mcp-server: Specification
+Status: approved (session 09, 2026-11-25)
+Implements: FR-MCP-01..07, NFR-01, NFR-02, NFR-06, EC-21, EC-22, AC-06, AC-07, AC-08
+
+## 1. Responsibility
+
+The `mcp-server` module is a separate Maven module, `product-mcp-server`. It is a Spring AI MCP server that uses the
+stdio transport and exposes the five Product endpoints of `product-backend` as five MCP tools. It covers:
+
+- the five tools: names, descriptions, parameter schemas, and how each one maps to one backend endpoint
+- the HTTP client (`RestClient`) that calls the running backend, with its base URL and Basic credentials taken from
+  configuration
+- turning backend responses into tool results. Success returns product JSON (or a short text for delete). An error
+  becomes an MCP tool error with the text `<status> <reason>: <detail>`.
+- keeping stdout clean for the stdio protocol
+
+It does **not** validate product input or enforce security. Both stay in `product-backend`, which is the single
+source of truth (PRODUCT-S10..S12, SECURITY-S01..S10). The MCP server passes the AI's input through and reports
+whatever the backend answers. It has no database and no state of its own, and it doesn't start or manage the backend.
+
+## 2. Public interface
+
+Maven module `product-mcp-server` (artifact `product-mcp-server`), listed in the root `pom.xml` `<modules>` after
+`product-backend`. Package: `com.aieng.productmcpserver`.
+
+```java
+@SpringBootApplication
+class ProductMcpServerApplication { static void main(String[] args); }
+
+// Bound from configuration (MCP-SERVER-S03)
+@ConfigurationProperties(prefix = "product-api")
+record ProductApiProperties(String baseUrl
+... [truncated 22495 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/modules/security/test.md; grep -n \"^## \" ~/.claude/skills/sdd-workflow/references/templates.md; grep -n \"FR-MCP\\|NFR-0[126]\\|AC-0[678]\\|EC-2[12]\" docs/requirements.md",
+  "description": "Read security test plan, template headings, MCP requirements"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# security: Test cases
+Status: approved (session 06, 2026-11-25)
+Derived from: `docs/modules/security/spec.md` (approved, commit `6308c07`)
+
+## Test location and fixtures
+
+All new tests live in `product-backend/src/test/java/com/aieng/productbackend/security/`.
+
+| Class | Kind | Covers |
+|-------|------|--------|
+| `SecurityApiIntegrationTest` | `@SpringBootTest` + `@AutoConfigureMockMvc`, real filter chain, real H2 and seed data | T01–T07, T09–T24 |
+| `SecurityMatrixIntegrationTest` | Same setup, one `@ParameterizedTest` over the spec §4 authorization matrix | T25 |
+| `SecurityUsersTest` | `@SpringBootTest` (no MockMvc); autowires `UserDetailsService` and `PasswordEncoder` | T08 |
+
+**Credentials:** every authenticated request sends a real `Authorization: Basic …` header built with
+`SecurityMockMvcRequestPostProcessors.httpBasic(username, password)` from `spring-security-test`, so it goes through
+`BasicAuthenticationFilter` and the real in-memory users. `@WithMockUser` is **not** used. "Anonymous" means no
+`Authorization` header at all. Raw headers (`Basic !!!`, `Bearer abc`) are set with `.header("Authorization", …)`.
+
+**CSRF:** no test adds `.with(csrf())`. Passing without a token is part of what S09 checks.
+
+**State reset:** the same `@Sql(scripts = "/reset-products.sql", executionPhase = BEFORE_TEST_METHOD)` as the product
+module, so every test (and every parameterized invocation of T25) starts with ids 1–3 and the next id is 4.
+
+**Seed data:** 1 Wireless Mouse, 2 Mechanical Keyboard, 3 USB-C Hub (see `product/test.md`). Id 999 never exists.
+
+**Callers** (shorthand used below):
+
+| Shorthand | Header |
+|-----------|--------|
+| anon | none |
+| user | `httpBasic("user", "user123")` |
+| admin | `httpBasic("admin", "admin123")` |
+| wrongpw | `httpBasic("admin", "wrong")` |
+
+**Naming:** each test method starts with its ID, e.g. `void T10_anonymousDelete_returns401WithChallenge()`.
+"401 challenge" means status 401, header `WWW-Authenticate: Basic realm="Realm"` and the
+... [truncated 13633 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "sed -n 43,58p ~/.claude/skills/sdd-workflow/references/templates.md; cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat pom.xml | grep -n \"module\\|version\" | head; ls product-mcp-server 2>&1",
+  "description": "Read test.md template and check build modules"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT (error)]
+Exit code 2
+## test.md — `docs/modules/<module>/test.md`
+
+```markdown
+# <module> — Test cases
+Derived from: docs/modules/<module>/spec.md (commit)
+Test location / fixtures: …
+
+| ID | Spec rule(s) | Given | When | Then | Data |
+|---|---|---|---|---|---|
+| <MODULE>-T01 | <MODULE>-S01 | … | … | … | sample file / inline |
+
+## Coverage        (every spec rule → ≥1 test; every sample file the module touches → listed)
+## Not tested here (covered by …)
+## Decision log
+```
+
+1:<?xml version="1.0" encoding="UTF-8"?>
+10:        <version>3.5.16</version>
+16:    <version>0.0.1-SNAPSHOT</version>
+21:        <java.version>21</java.version>
+24:    <modules>
+25:        <module>product-backend</module>
+26:    </modules>
+ls: cannot access 'product-mcp-server': No such file or directory
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -n \"decimal\\|invalid fields\\|must not be blank\\|Malformed\\|not found\" docs/modules/product/spec.md | head -20; grep -n \"Naming\\|naming\" docs/modules/product/test.md | head",
+  "description": "Grep backend error messages from product spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+56:    ProductNotFoundException(Long id);   // message: "Product with id <id> not found"
+87:| PRODUCT-S10 | **Validation** (on POST and PUT): `name` must not be blank (`@NotBlank`) and is at most 100 characters (`@Size(max=100)`). `description` is at most 500 characters. `price` is not null, greater than 0 (`@DecimalMin(value="0", inclusive=false)`) and has at most 10 integer digits and 2 decimals (`@Digits(integer=10, fraction=2)`). `quantity` is not null and at least 0 (`@Min(0)`). | FR-IN-02, EC-01..04, EC-06, EC-07 | `{name:"Pen", price:0, quantity:5}` → 400, `errors.price = "must be greater than 0"`. `{name:"Pen", price:10, quantity:0}` → 201. |
+88:| PRODUCT-S11 | A validation failure returns **400** ProblemDetail with title `Validation failed` and detail `Request has invalid fields`. It also has an `errors` object that maps **every** invalid field to its message (the default Bean Validation message). If a field breaks more than one constraint, only one message is reported for it. Nothing is saved. | FR-ERR-02, EC-05 | `{name:"", price:-1, quantity:-1}` → 400, `errors` has the keys `name`, `price` and `quantity`. |
+90:| PRODUCT-S13 | `price` is always returned with 2 decimals. | FR-IN-03 | `POST {name:"Pen", price:10, quantity:1}` → response `price: 10.00` |
+91:| PRODUCT-S14 | An `{id}` that does not exist returns **404** ProblemDetail with title `Not Found` and detail `Product with id <id> not found`. This applies to GET, PUT and DELETE. Zero and negative ids are treated as unknown ids and return 404. A PUT on an unknown id creates nothing. | FR-API-03..05, FR-ERR-03, FR-PROD-03, EC-09, EC-12, EC-17 (Q1) | `GET /api/products/999` → 404 `Product with id 999 not found`. `GET /api/products/0` → 404 `Product with id 0 not found`. A valid `PUT /api/products/999` → 404, and the list still has 3 items. |
+93:| PRODUCT-S16 | A malformed JSON body or a missing body on POST/PUT returns **400** ProblemDetail with title `Malformed request` and detail `Request body is missi
+... [truncated 1743 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q1/1: How should the mcp-server tests check what the AI client actually sees: isError results, the tools/list schema (S02) and clean stdout (S15)? NFR-06 says there's no real backend, so it's mocked in every option.",
+      "header": "Test layers",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "3 layers (Recommended)",
+          "description": "(1) ProductApiClient tests with MockRestServiceServer (HTTP, auth, error text). (2) In-JVM MCP tests that turn the ToolCallbackProvider into MCP tool specifications and call them to get real CallToolResults (isError, schemas). (3) One stdio subprocess test that starts the server from the test classpath with a JDK HttpServer stub backend, then checks initialize, tools/list, a tool call and that stdout holds only JSON-RPC."
+        },
+        {
+          "label": "Layers 1+2 only",
+          "description": "Client tests with MockRestServiceServer plus in-JVM CallToolResult tests. No subprocess. S15 (clean stdout) is only checked through config/properties assertions and the manual AC-07 run."
+        },
+        {
+          "label": "Subprocess only",
+          "description": "Every test drives the real server over stdio against a JDK HttpServer stub. Most realistic, but slow, and harder to pin down exact HTTP requests and headers."
+        },
+        {
+          "label": "Client unit tests only",
+          "description": "Only ProductApiClient + ProductTools with Mo
+... [truncated 151 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q1/1: How should the mcp-server tests check what the AI client actually sees: isError results, the tools/list schema (S02) and clean stdout (S15)? NFR-06 says there's no real backend, so it's mocked in every option."="3 layers (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat product-backend/src/main/resources/data.sql; grep -rn \"class .*Test\" product-backend/src/test/java | head -3; echo -n 'admin:admin123' | base64; echo -n 'user:user123' | base64; echo -n 'admin:wrong' | base64",
+  "description": "Read seed data and compute Basic header values"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+-- Seed products (FR-PROD-05). Inserted without ids so IDENTITY continues at 4 (PRODUCT-S06).
+INSERT INTO product (name, description, price, quantity) VALUES ('Wireless Mouse', '2.4 GHz wireless mouse, black', 799.00, 25);
+INSERT INTO product (name, description, price, quantity) VALUES ('Mechanical Keyboard', 'Blue switches, full size', 2499.00, 10);
+INSERT INTO product (name, description, price, quantity) VALUES ('USB-C Hub', '6-in-1 hub with HDMI', 1299.50, 0);
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:39:class ProductApiIntegrationTest {
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java:25:class ProductControllerErrorTest {
+product-backend/src/test/java/com/aieng/productbackend/product/ProductRequestTest.java:10:class ProductRequestTest {
+YWRtaW46YWRtaW4xMjM=
+dXNlcjp1c2VyMTIz
+YWRtaW46d3Jvbmc=
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Going with the 3 layers. Writing `test.md` now.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\mcp-server\\test.md",
+  "content": "# mcp-server: Test cases\nStatus: draft (session 10, 2026-11-25)\nDerived from: `docs/modules/mcp-server/spec.md` (approved, commit `469adf6`)\n\n## Test location and fixtures\n\nAll tests live in `product-mcp-server/src/test/java/com/aieng/productmcpserver/`. None of them need a running\n`product-backend` (NFR-06). The backend is always a stub.\n\n| Class | Layer | Kind | Covers |\n|-------|-------|------|--------|\n| `ProductApiClientTest` | 1: HTTP client | `ProductApiClient` built from a `RestClient.Builder` bound to `MockRestServiceServer`, with `ProductApiProperties` given per test. No Spring context | T01–T17 |\n| `ProductToolsMcpTest` | 2: MCP tools in-JVM | `@SpringBootTest` (non-web). `MockRestServiceServer` is bound through the `RestClient.Builder` the app uses. The registered `ToolCallbackProvider` is turned into MCP sync tool specifications the way the starter does it, and each tool is called to get a real `CallToolResult` | T18–T34 |\n| `ProductMcpContextTest` | 2: context | `@SpringBootTest`, no stub | T35, T36 |\n| `StdioServerProcessTest` | 3: stdio process | Starts the server as a child process (`java -cp <test classpath> com.aieng.productmcpserver.ProductMcpServerApplication`), with a JDK `HttpServer` stub backend on a random port, and talks raw JSON-RPC over its stdin/stdout | T37–T41 |\n| *(manual)* | acceptance | Claude C
+... [truncated 23103 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\mcp-server\test.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\mcp-server\\test.md",
+  "old_string": "wrong creds on a\nread (T13-style mapping via T12a; the 401 body is the same)",
+  "new_string": "wrong creds on a\nread (T12a: the backend sends the same 401 body for anonymous and wrong credentials, SECURITY-T17)"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add docs/modules/mcp-server/test.md && git commit -q -m \"docs(mcp-server): add test plan\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1 && git remote",
+  "description": "Commit the mcp-server test plan"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\mcp-server\test.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'docs/modules/mcp-server/test.md', LF will be replaced by CRLF the next time Git touches it
+e246a9c docs(mcp-server): add test plan
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Session 10 is under way. I wrote the `mcp-server` test plan to `docs/modules/mcp-server/test.md`; it's marked draft until you approve it. It's committed as `e246a9c` (`docs(mcp-server): add test plan`) and not pushed, because the repo has no remote. CLAUDE.md didn't need changes, since every decision here only affects tests.
+
+**What's in it:** 43 tests, `MCP-SERVER-T01` to `T43`. Every spec rule S01–S16 has at least one test, and the coverage tables also map the edge cases, acceptance criteria and FR-MCP requirements.
+
+**Your answer (Q1):** three test layers.
+- **Layer 1, HTTP client (T01–T17):** `ProductApiClient` against `MockRestServiceServer`. These check the exact URLs and bodies sent, when the Basic header is sent, the trailing slash, how errors become text (sorted field errors, the fallback when there's no `detail`), unreachable and timeout, and that credentials never leak.
+- **Layer 2, MCP tools in the same JVM (T18–T36):** these call the tools and get real `CallToolResult`s back. They check the 5 tool names, descriptions and schemas exactly, the exact result JSON, `isError` on errors, `id is required` with no HTTP call, error-then-success, the non-web context and the config defaults.
+- **Layer 3, stdio process (T37–T41):** starts the server as a child process against a stub backend, sends `initialize`, `tools/list` and `tools/call`, and checks that every stdout line is JSON-RPC and that the log file is written.
+- **Manual (T42, T43):** AC-07 and AC-08 in Claude Code against the real backend.
+
+**Decided without asking (veto any of these):**
+- The child process starts from the test classpath, not the jar, because `mvnw test` runs before the jar is built.
+- Layer 3 reads raw JSON-RPC lines instead of using the MCP SDK client, so any stray stdout line fails the test.
+- T16 tests the 10 s read timeout for real, so it adds about 10 s to the build. The 5 s connect timeout isn't tested on its own, because reliably forcing a connect timeout isn't practical in a test.
+- At the tool layer, the price in the request body is checked by value, not exact JSON, because converting tool arguments may drop trailing zeros. Layer 1 checks the exact JSON, e.g. `1599.00`.
+- The "unexpected error" case is triggered by a 200 response whose body isn't JSON.
+- T36 checks the default config and is skipped if any `PRODUCT_API_*` env var is set on your machine.
+- Test methods are named `T<NN>_…`, and stub response bodies are inline constants rather than fixture files.
+
+Tell me what to change, or approve it and I'll mark it approved. The next step is `plan.md` for `mcp-server`.
+
+--------------------------------------------------------------------------------
+
+USER:
+approved, mark it and end the session
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -i 's/^Status: draft (session 10, 2026-11-25)$/Status: approved (session 10, 2026-11-25)/' docs/modules/mcp-server/test.md && head -2 docs/modules/mcp-server/test.md && git add docs/modules/mcp-server/test.md && git commit -q -m \"docs(mcp-server): mark test plan approved\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1",
+  "description": "Mark test plan approved and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# mcp-server: Test cases
+Status: approved (session 10, 2026-11-25)
+warning: in the working copy of 'docs/modules/mcp-server/test.md', LF will be replaced by CRLF the next time Git touches it
+4a38557 docs(mcp-server): mark test plan approved
+[This command modified 1 file you've previously read: docs\modules\mcp-server\test.md. Call Read before editing.]
