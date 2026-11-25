@@ -58,7 +58,9 @@ Rules:
 - **Security scope and errors (session 05):** only `DELETE /api/products/**` is protected; every other path (including ones outside `/api/products`) is open. 401 is `Unauthorized` / `Authentication required` (same for anonymous and bad credentials); 403 is `Forbidden` / `Access Denied`.
 - **MCP tools:** `list_products`, `get_product`, `create_product`, `update_product`, `delete_product`.
   - Credentials come from the env vars `PRODUCT_API_BASE_URL`, `PRODUCT_API_USERNAME` and `PRODUCT_API_PASSWORD`.
-  - Backend errors come back as tool errors (`<status>: <detail>`).
+  - Backend errors come back as tool errors (`isError: true`) with the text `<status> <reason>: <detail>`, e.g. `403 Forbidden: Access Denied`. If the body has an `errors` map, ` (field: msg; …)` is appended, sorted by field (session 09).
+  - Success: get/create/update return product JSON, list returns a JSON array, delete returns `Product <id> deleted`.
+  - No client-side validation: input goes to the backend unchanged. Basic auth is sent only when both username and password are set.
 
 ## Git workflow
 
