@@ -1,0 +1,520 @@
+Session folder : session-09-mcp-server-spec
+Session id     : efa2ef38-36bb-4b13-8bc3-03fe3625fea6
+Started        : 2026-11-25T07:01:37.013Z
+Exported       : 2026-11-25T09:32:49.881Z
+================================================================================
+
+USER:
+start session 09, write the mcp-server spec
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Skill]
+{
+  "skill": "sdd-workflow",
+  "args": "start session 09, write the mcp-server spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Launching skill: sdd-workflow
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && node ~/.claude/skills/sdd-workflow/scripts/sdd-status.mjs; ls docs docs/modules/*; ls sessions; tail -60 sessions/session-08*/conversation.txt",
+  "description": "Show SDD status, docs and last session tail"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+CLAUDE.md      : yes
+requirements.md: yes
+export tool    : yes
+modules (from CLAUDE.md):
+  product        spec test plan
+  security       spec test plan
+  mcp-server     - - -
+last session   : session-08-security-implementation
+this session   : 09
+next doc step  : write docs/modules/mcp-server/spec.md (or implement earlier modules first — check code)
+docs:
+modules
+requirements.md
+
+docs/modules/product:
+plan.md
+spec.md
+test.md
+
+docs/modules/security:
+plan.md
+spec.md
+test.md
+session-01-project-setup
+session-02-product-spec-and-tests
+session-03-product-plan
+session-04-product-implementation
+session-05-security-spec
+session-06-security-test-plan
+session-07-security-plan
+session-08-security-implementation
+  "command": "$p = (Get-NetTCPConnection -LocalPort 8080 -State Listen -ErrorAction SilentlyContinue).OwningProcess; if ($p) { Stop-Process -Id $p -Force -Confirm:$false; \"stopped $p\" }"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+stopped 20748
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+The security module is implemented and all 100 tests pass with `mvnw.cmd test`. That's the 46 product tests, 26 security test methods and the 28 cells of the T25 access matrix. The manual delete check against the running app (AC-04) also gave the expected results.
+
+**Commits on `main`** (there's no remote, so nothing was pushed):
+
+| Step | Commit | What | Tests after |
+|------|--------|------|-------------|
+| 1 | `a267b55` | Spring Security dependencies, password encoder, the two users, a temporary allow-all rule, empty handler classes | 46/46 product tests pass |
+| 2 | `0d76dbc` | Tests T01–T25; the product DELETE tests now log in as admin | 100 run, 20 fail, all for the expected reason |
+| 3 | `86b0d6f` | The real rules: only DELETE needs ADMIN, no sessions, CSRF off, JSON error bodies for 401/403 | 100/100 pass |
+
+**Manual check on product 2:**
+- Anonymous DELETE got 401 with th
+... [truncated 2377 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/requirements.md && cat docs/modules/security/spec.md && ls; cat pom.xml; ls product-mcp-server 2>&1",
+  "description": "Read requirements, security spec and build layout"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT (error)]
+Exit code 2
+# AIEng-MCPServer: Requirements
+Status: approved baseline (session 01, 2026-11-25)
+
+## 1. Purpose and scope
+
+The project builds a small Product catalogue backend and then an MCP server around it, so an AI client can manage products through MCP tools.
+
+- **Phase 1, `product-backend`:** a Spring Boot REST API with CRUD on `Product`. Create, read and update are open to anyone. Delete needs the `ADMIN` role.
+- **Phase 2, `product-mcp-server`:** a separate Spring AI MCP server (stdio). It exposes the five Product operations as MCP tools by calling the backend over HTTP.
+
+**Out of scope:**
+- user registration and management
+- JWT/OAuth
+- persistent database
+- pagination, search, filtering and sorting options
+- PATCH
+- categories, images and stock movements
+- UI
+- deployment and containers
+- the H2 web console
+- HTTPS
+
+## 2. Glossary
+
+| Term | Meaning |
+|------|---------|
+| Product | A catalogue item with `id`, `name`, `description`, `price`, `quantity` |
+| ADMIN / USER | Roles of the in-memory users; only ADMIN can delete |
+| Anonymous | A request with no `Authorization` header |
+| ProblemDetail | RFC 7807 JSON error body (`type`, `title`, `status`, `detail`, `instance`) |
+| MCP tool | A function exposed by the MCP server to an AI client |
+| Seed data | The 3 products inserted at backend startup |
+
+## 3. Inputs / data formats
+
+- **FR-IN-01:** Request and response bodies are JSON (`application/json`). Error bodies are `application/problem+json`.
+- **FR-IN-02:** Product request body (create and update):
+
+  | Field | Type | Required | Rule |
+  |-------|------|----------|------|
+  | `name` | string | yes | not blank, max 100 chars |
+  | `description` | string | no | max 500 chars; missing means `null` |
+  | `price` | number (BigDecimal) | yes | > 0, at most 10 integer digits and 2 decimals |
+  | `quantity` | integer | yes | >= 0 |
+
+  Any `id` sent in a request body is ignored. Unknown JSON fields are ignored.
+- **FR-IN-03:** Product response body: `{ "id": Long, "
+... [truncated 8040 chars]
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Let me read the MCP-related parts of requirements and the security spec's top sections fully.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -n '/FR-SEC-04/,$p' docs/requirements.md; echo =====; sed -n '1,80p' docs/modules/security/spec.md",
+  "description": "Read rest of requirements and start of security spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+- **FR-SEC-04:** The API is stateless. It creates no HTTP session, and CSRF protection is disabled.
+- **FR-SEC-05:** Authorization is checked before the product lookup. A USER deleting a non-existent id gets 403, not 404.
+
+## 7. Error rules
+
+- **FR-ERR-01:** Every 4xx/5xx from the application is a ProblemDetail with a human-readable `detail`.
+- **FR-ERR-02:** Validation failures return 400 with title `Validation failed`. They also include an `errors` object with field → message, e.g. `{"price": "must be greater than 0"}`. All invalid fields are reported together, not just the first one.
+- **FR-ERR-03:** Not found returns 404 with detail `Product with id 999 not found`.
+- **FR-ERR-04:** Malformed JSON or a non-numeric path id returns 400 ProblemDetail.
+- **FR-ERR-05:** 401 and 403 responses from the security layer return a ProblemDetail body.
+
+## 8. MCP server rules (phase 2)
+
+- **FR-MCP-01:** The MCP server is a separate Maven module (`product-mcp-server`). It is a Spring AI MCP server with stdio transport.
+- **FR-MCP-02:** It exposes exactly 5 tools, each mapped to one endpoint:
+
+  | Tool | Endpoint | Parameters |
+  |------|----------|------------|
+  | `list_products` | FR-API-02 | none |
+  | `get_product` | FR-API-03 | `id` |
+  | `create_product` | FR-API-01 | `name`, `description?`, `price`, `quantity` |
+  | `update_product` | FR-API-04 | `id`, `name`, `description?`, `price`, `quantity` |
+  | `delete_product` | FR-API-05 | `id` |
+
+- **FR-MCP-03:** The backend base URL and credentials come from configuration and environment variables:
+  - `PRODUCT_API_BASE_URL` (default `http://localhost:8080`)
+  - `PRODUCT_API_USERNAME`
+  - `PRODUCT_API_PASSWORD`
+
+  When both credentials are set, every call sends HTTP Basic. Credentials are never tool parameters.
+- **FR-MCP-04:** When the backend returns an error, the tool reports an error result containing the HTTP status and the ProblemDetail `detail`, e.g. `403 Forbidden: Access Denied`. It does not crash the server.
+- **FR-M
+... [truncated 12561 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -n \"^## \" docs/modules/product/spec.md; sed -n '/^## 6/,/^## 8/p' docs/modules/product/spec.md | head -60; grep -n \"^## \" ~/.claude/skills/sdd-workflow/references/templates.md; ls product-backend/src/main/resources; cat product-backend/src/main/resources/application*",
+  "description": "Read product spec errors and template headings"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+5:## 1. Responsibility
+20:## 2. Public interface
+66:## 3. Behaviour rules
+98:## 4. Data shapes
+134:## 5. Edge cases
+164:## 6. Errors
+180:## 7. Out of scope
+188:## 8. Decision log
+## 6. Errors
+
+| Trigger | Exception | Status | title | detail | Extra |
+|---------|-----------|--------|-------|--------|-------|
+| Bean Validation failure | `MethodArgumentNotValidException` | 400 | `Validation failed` | `Request has invalid fields` | `errors` map |
+| Wrong JSON type for a field | `HttpMessageNotReadableException` caused by `MismatchedInputException` / `InvalidFormatException` | 400 | `Validation failed` | `Request has invalid fields` | `errors` map with one field |
+| Malformed or missing body | `HttpMessageNotReadableException` (other causes) | 400 | `Malformed request` | `Request body is missing or not valid JSON` | none |
+| Non-numeric path id | `MethodArgumentTypeMismatchException` | 400 | `Bad Request` | `Invalid value '<v>' for parameter 'id'` | none |
+| Unknown id | `ProductNotFoundException` | 404 | `Not Found` | `Product with id <id> not found` | none |
+| Unsupported method / media type | Spring MVC built-ins | 405 / 415 | Spring default | Spring default | none |
+| Anything else | `Exception` | 500 | `Internal Server Error` | `Unexpected error` | logged server-side |
+
+Guarantees: the module never returns an HTML error page or a stack trace, and failed requests make no partial writes.
+Strict typing comes from setting `spring.jackson.mapper.allow-coercion-of-scalars=false` and
+`spring.jackson.deserialization.accept-float-as-int=false` (the plan confirms the exact mechanism).
+
+## 7. Out of scope
+
+- Authentication, authorization, 401/403, CSRF and the session policy (`security` module)
+- The MCP server (`mcp-server` module)
+- Pagination, search, filtering, sorting parameters and PATCH (requirements §1)
+- Optimistic locking or concurrency control
+- The H2 console
+
+## 8. Decision log
+6:## requirements.md — `docs/requirements.md`
+12:## 1. Purpose and scope (incl. Out of 
+... [truncated 2349 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q1/4: The two sources give different formats for the text of an MCP tool error when the backend returns an error. CLAUDE.md says `<status>: <detail>` (e.g. `403: Access Denied`). requirements.md FR-MCP-04 gives the example `403 Forbidden: Access Denied`, which also has the reason phrase. Which format should the spec use?",
+      "header": "Error text",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Status + reason (Recommended)",
+          "description": "`403 Forbidden: Access Denied`, `404 Not Found: Product with id 999 not found`. Matches FR-MCP-04 and is clearer to the AI. CLAUDE.md gets updated to match."
+        },
+        {
+          "label": "Status only",
+          "description": "`403: Access Denied`. Matches CLAUDE.md; requirements FR-MCP-04 example gets corrected."
+        },
+        {
+          "label": "Status + ProblemDetail title",
+          "description": "`403 Forbidden: Access Denied` using the backend's `title` field instead of the HTTP reason phrase (differs for 400 validation: `400 Validation failed: ...`)."
+        },
+        {
+          "label": "Raw ProblemDetail JSON",
+          "description": "Error result text is the backend's ProblemDetail JSON body as-is, prefixed with nothing."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q1/4: The two sources give different formats for the text of an MCP tool error when the backend returns an error. CLAUDE.md says `<status>: <detail>` (e.g. `403: Access Denied`). requirements.md FR-MCP-04 gives the example `403 Forbidden: Access Denied`, which also has the reason phrase. Which format should the spec use?"="Status + reason (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q2/4: For a backend 400 validation failure, the ProblemDetail `detail` is just `Request has invalid fields`, and the useful part is in the `errors` map (e.g. `{\"price\":\"must be greater than 0\"}`). With only status + detail, the AI wouldn't know which field to fix. Should the tool error include the field errors?",
+      "header": "Field errors",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Append errors (Recommended)",
+          "description": "`400 Bad Request: Request has invalid fields (name: must not be blank; price: must be greater than 0)`, fields sorted by name. Appended only when the body has an `errors` map."
+        },
+        {
+          "label": "Detail only",
+          "description": "`400 Bad Request: Request has invalid fields`. Simple, but the AI can't tell which field was wrong."
+        },
+        {
+          "label": "Errors as JSON",
+          "description": "`400 Bad Request: Request has invalid fields {\"price\":\"must be greater than 0\"}` — the map appended as raw JSON."
+        },
+        {
+          "label": "Errors only",
+          "description": "Replace the detail with the field list: `400 Bad Request: price: must be greater than 0`."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q2/4: For a backend 400 validation failure, the ProblemDetail `detail` is just `Request has invalid fields`, and the useful part is in the `errors` map (e.g. `{"price":"must be greater than 0"}`). With only status + detail, the AI wouldn't know which field to fix. Should the tool error include the field errors?"="Append errors (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q3/4: What should successful tool calls return to the AI client? For example, `get_product` with id 1, `list_products` with the 3 seed products, and `delete_product` with id 3, where the backend returns 204 with no body.",
+      "header": "Success out",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Product JSON + delete text (Recommended)",
+          "description": "get/create/update return the product as JSON `{id,name,description,price,quantity}`; list returns a JSON array; delete returns text `Product 3 deleted`."
+        },
+        {
+          "label": "Human-readable text",
+          "description": "e.g. `#1 Wireless Mouse — 799.00 (25 in stock)`; list returns one line per product. Delete: `Product 3 deleted`."
+        },
+        {
+          "label": "JSON everywhere",
+          "description": "Same JSON for products; delete returns `{\"deleted\":true,\"id\":3}`."
+        },
+        {
+          "label": "JSON wrapped in envelope",
+          "description": "`{\"status\":200,\"data\":{...}}` for every tool, delete has `data:null`."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The user answered: "Q3/4: What should successful tool calls return to the AI client? For example, `get_product` with id 1, `list_products` with the 3 seed products, and `delete_product` with id 3, where the backend returns 204 with no body."="okay go with all recommended". Read the answers carefully — they may request clarification, changes, or that you not proceed — and follow what they actually say.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -rn \"message\\s*=\" product-backend/src/main/java | head -20; grep -n \"must\" docs/modules/product/spec.md | head -20; git log --oneline | head -30",
+  "description": "Find backend validation messages"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+87:| PRODUCT-S10 | **Validation** (on POST and PUT): `name` must not be blank (`@NotBlank`) and is at most 100 characters (`@Size(max=100)`). `description` is at most 500 characters. `price` is not null, greater than 0 (`@DecimalMin(value="0", inclusive=false)`) and has at most 10 integer digits and 2 decimals (`@Digits(integer=10, fraction=2)`). `quantity` is not null and at least 0 (`@Min(0)`). | FR-IN-02, EC-01..04, EC-06, EC-07 | `{name:"Pen", price:0, quantity:5}` → 400, `errors.price = "must be greater than 0"`. `{name:"Pen", price:10, quantity:0}` → 201. |
+89:| PRODUCT-S12 | **Strict JSON typing:** Jackson does not coerce types. `quantity` must be a JSON integer, so `1.5`, `"5"` and `true` are rejected. `price` must be a JSON number, so `"10.00"` is rejected. Either case returns **400** ProblemDetail with title `Validation failed` and an `errors` entry for the bad field (`"must be an integer"` or `"must be a number"`). Jackson stops at the first type error, so only that field is reported. | FR-IN-02, FR-ERR-02 (Q3) | `{name:"Pen", price:10, quantity:1.5}` → 400, `errors.quantity = "must be an integer"`. `{name:"Pen", price:"10.00", quantity:1}` → 400, `errors.price = "must be a number"`. |
+130:  "errors": { "name": "must not be blank", "price": "must be greater than 0", "quantity": "must be greater than or equal to 0" }
+159:| null price or quantity | 400, `errors.price` / `errors.quantity` = `must not be null` | `{name:"Pen", price:null, quantity:null}` | S10 |
+c5847e5 chore(sessions): add session 08 conversation log
+86b0d6f feat(security): require ADMIN for DELETE with ProblemDetail 401/403
+0d76dbc test(security): add tests SECURITY-T01..T25
+a267b55 feat(security): add Spring Security dependency and config skeleton
+d1dfb68 chore(sessions): add session 07 conversation log
+138e07a docs(security): mark implementation plan approved
+72685fa docs(security): add implementation plan
+f8b0e4c chore(sessions): add session 06 conversation log
+c371c28 docs(security): mar
+... [truncated 1141 chars]
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Now writing the spec.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\mcp-server\\spec.md",
+  "content": "# mcp-server: Specification\nStatus: draft (session 09, 2026-11-25)\nImplements: FR-MCP-01..07, NFR-01, NFR-02, NFR-06, EC-21, EC-22, AC-06, AC-07, AC-08\n\n## 1. Responsibility\n\nThe `mcp-server` module is a separate Maven module, `product-mcp-server`. It is a Spring AI MCP server that uses the\nstdio transport and exposes the five Product endpoints of `product-backend` as five MCP tools. It covers:\n\n- the five tools: names, descriptions, parameter schemas, and how each one maps to one backend endpoint\n- the HTTP client (`RestClient`) that calls the running backend, with its base URL and Basic credentials taken from\n  configuration\n- turning backend responses into tool results. Success returns product JSON (or a short text for delete). An error\n  becomes an MCP tool error with the text `<status> <reason>: <detail>`.\n- keeping stdout clean for the stdio protocol\n\nIt does **not** validate product input or enforce security. Both stay in `product-backend`, which is the single\nsource of truth (PRODUCT-S10..S12, SECURITY-S01..S10). The MCP server passes the AI's input through and reports\nwhatever the backend answers. It has no database and no state of its own, and it doesn't start or manage the backend.\n\n## 2. Public interface\n\nMaven module `product-mcp-server` (artifact `product-mcp-server`), listed in the root `pom.xml` `<modules>
+... [truncated 18936 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\mcp-server\spec.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "printf 'admin:admin123' | base64",
+  "description": "Verify Basic header example"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+YWRtaW46YWRtaW4xMjM=
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Next I'm recording the decisions in CLAUDE.md (error format, session list), then making the two commits.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -n \"Backend errors come back\\|Session 01\" CLAUDE.md",
+  "description": "Locate lines to edit in CLAUDE.md"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+61:  - Backend errors come back as tool errors (`<status>: <detail>`).
+73:- Session 01: SDD project setup.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\CLAUDE.md",
+  "old_string": "  - Backend errors come back as tool errors (`<status>: <detail>`).",
+  "new_string": "  - Backend errors come back as tool errors (`isError: true`) with the text `<status> <reason>: <detail>`, e.g. `403 Forbidden: Access Denied`. If the body has an `errors` map, ` (field: msg; …)` is appended, sorted by field (session 09).\n  - Success: get/create/update return product JSON, list returns a JSON array, delete returns `Product <id> deleted`.\n  - No client-side validation: input goes to the backend unchanged. Basic auth is sent only when both username and password are set."
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add CLAUDE.md && git commit -q -m \"docs: record session 09 decisions in CLAUDE.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git add docs/modules/mcp-server/spec.md && git commit -q -m \"docs(mcp-server): add spec\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -2 && git status --short",
+  "description": "Commit CLAUDE.md decisions and mcp-server spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\CLAUDE.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'CLAUDE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/modules/mcp-server/spec.md', LF will be replaced by CRLF the next time Git touches it
+2203125 docs(mcp-server): add spec
+789d9b8 docs: record session 09 decisions in CLAUDE.md
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I've written the `mcp-server` spec at `docs/modules/mcp-server/spec.md`. It's marked draft until you approve it. Nothing was pushed because there's no remote.
+
+**What the spec covers:**
+- It has 16 rules, `MCP-SERVER-S01` to `S16`.
+- It gives the exact description of each of the 5 tools and each of their parameters.
+- It defines how config and env vars are read, when Basic credentials are sent, and how each tool maps to a backend endpoint.
+- It fixes the text for every kind of error: the backend returns an error, the backend can't be reached, the `id` is missing, or something unexpected happens.
+- It requires that nothing but protocol messages goes to stdout.
+- It includes an edge-case table that uses the seed data, and a sample config for registering the server in Claude Code.
+
+**Your answers:**
+- **Q1, error text:** `<status> <reason>: <detail>`, for example `403 Forbidden: Access Denied`. This matches the example in FR-MCP-04, and I updated `CLAUDE.md`, which had said `<status>: <detail>`.
+- **Q2, field errors:** on a 400, the field errors are added to the text, sorted by field. Example: `400 Bad Request: Request has invalid fields (name: must not be blank; price: must be greater than 0; quantity: must be greater than or equal to 0)`.
+- **Q3, success output:** get, create and update return the product as JSON, list returns a JSON array, and delete returns `Product 3 deleted`.
+- **Q4, validation:** the MCP server does no validation of its own. Input goes to the backend unchanged, and the backend's 400 comes back as the tool error.
+
+**Decided without asking (veto any of these):**
+- Basic auth is sent only when username and password are both set and not blank. Otherwise every call is anonymous.
+- A missing `id` returns the error `id is required`, and the backend isn't called, since there's no URL to build.
+- An error response with no usable body produces just `<status> <reason>`, for example `502 Bad Gateway`.
+- Timeouts are 5 s to connect and 10 s to read. A timeout gives the same `Product API unreachable at <url>` message as a refused connection.
+- The startup banner and console logging are off. Logs go to `${java.io.tmpdir}/product-mcp-server.log`.
+- Tools are written with Spring AI's `@Tool`/`@ToolParam` and registered through a `ToolCallbackProvider` bean. The plan will pin the version.
+- The server is named `product-mcp-server`, version `0.0.1`, in package `com.aieng.productmcpserver`.
+- A trailing `/` on the base URL is ignored.
+- Any other exception returns `Unexpected error: <message>`, and the server keeps running.
+
+**Commits:**
+- `789d9b8` docs: record session 09 decisions in CLAUDE.md
+- `2203125` docs(mcp-server): add spec
+
+Tell me what to change, or approve the spec and I'll commit `docs(mcp-server): mark spec approved`. The test plan (`test.md`) comes next, in session 10.
+
+--------------------------------------------------------------------------------
+
+USER:
+approved, mark it and end the session
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -i 's/^Status: draft (session 09, 2026-11-25)$/Status: approved (session 09, 2026-11-25)/' docs/modules/mcp-server/spec.md && head -2 docs/modules/mcp-server/spec.md && git add docs/modules/mcp-server/spec.md && git commit -q -m \"docs(mcp-server): mark spec approved\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1",
+  "description": "Mark spec approved and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# mcp-server: Specification
+Status: approved (session 09, 2026-11-25)
+warning: in the working copy of 'docs/modules/mcp-server/spec.md', LF will be replaced by CRLF the next time Git touches it
+469adf6 docs(mcp-server): mark spec approved
+[This command modified 1 file you've previously read: docs\modules\mcp-server\spec.md. Call Read before editing.]
