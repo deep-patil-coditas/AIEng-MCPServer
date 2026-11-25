@@ -1,0 +1,516 @@
+Session folder : session-05-security-spec
+Session id     : fbdbfc14-9980-4e7e-9380-0a6142ff3d4f
+Started        : 2026-11-25T06:34:32.808Z
+Exported       : 2026-11-25T06:38:14.392Z
+================================================================================
+
+USER:
+start session 05, write the security spec
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Skill]
+{
+  "skill": "sdd-workflow",
+  "args": "start session 05, write the security spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Launching skill: sdd-workflow
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && node ~/.claude/skills/sdd-workflow/scripts/sdd-status.mjs; ls sessions docs docs/modules/*; git log --oneline | head -20",
+  "description": "Show SDD status, docs and recent commits"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+CLAUDE.md      : yes
+requirements.md: yes
+export tool    : yes
+modules (from CLAUDE.md):
+  product        spec test plan
+  security       - - -
+  mcp-server     - - -
+last session   : session-04-product-implementation
+this session   : 05
+next doc step  : write docs/modules/security/spec.md (or implement earlier modules first — check code)
+docs:
+modules
+requirements.md
+
+docs/modules/product:
+plan.md
+spec.md
+test.md
+
+sessions:
+session-01-project-setup
+session-02-product-spec-and-tests
+session-03-product-plan
+session-04-product-implementation
+c8549b3 chore(sessions): add session 04 conversation log
+38d81e5 feat(product): add ProblemDetail error handling and strict JSON typing
+992bc34 feat(product): implement product CRUD and input normalisation
+94e00d2 test(product): add tests PRODUCT-T01..T43
+a3626fc feat(product): add API skeleton with stub service
+4f3d12e chore: pin line endings for Maven wrapper scripts
+b733f22 chore: add Maven multi-module build with product-backend
+e25544d chore(sessions): add session 03 conversation log
+b2389c0 docs(product): mark test plan and implementation plan approved
+ef8dd48 docs(product): add implementation plan
+29a6d55 chore(sessions): update session 02 conversation log
+dd26bbb chore(sessions): add session 02 conversation log
+d8c24be docs(product): add test plan
+3cce158 docs(product): mark spec approved
+8cff1f1 docs: record session 02 decisions in CLAUDE.md
+3143c3d docs(product): add spec
+30c3e6f chore(sessions): add session 01 conversation log
+fcdb8f5 docs: add requirements
+6a5b4e8 docs: record session 01 decisions in CLAUDE.md
+d409a02 chore: initialise SDD project setup
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && cat docs/requirements.md; echo ======; cat docs/modules/product/spec.md; echo =====; tail -c 5000 sessions/session-04-product-implementation/conversation.txt",
+  "description": "Read requirements, product spec, last session tail"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+<persisted-output>
+Output too large (33.9KB). Full output saved to: C:\Users\Coditas-Admin\.claude\projects\C--Users-Coditas-Admin-Desktop-All-Projects-AIEng-MCPServer\fbdbfc14-9980-4e7e-9380-0a6142ff3d4f\tool-results\bbkcumtyb.txt
+
+Preview (first 2KB):
+# AIEng-MCPServer: Requirements
+Status: approved baseline (session 01, 2026-11-25)
+
+## 1. Purpose and scope
+
+The project builds a small Product catalogue backend and then an MCP server around it, so an AI client can manage products through MCP tools.
+
+- **Phase 1, `product-backend`:** a Spring Boot REST API with CRUD on `Product`. Create, read and update are open to anyone. Delete needs the `ADMIN` role.
+- **Phase 2, `product-mcp-server`:** a separate Spring AI MCP server (stdio). It exposes the five Product operations as MCP tools by calling the backend over HTTP.
+
+**Out of scope:**
+- user registration and management
+- JWT/OAuth
+- persistent database
+- pagination, search, filtering and sorting options
+- PATCH
+- categories, images and stock movements
+- UI
+- deployment and containers
+- the H2 web console
+- HTTPS
+
+## 2. Glossary
+
+| Term | Meaning |
+|------|---------|
+| Product | A catalogue item with `id`, `name`, `description`, `price`, `quantity` |
+| ADMIN / USER | Roles of the in-memory users; only ADMIN can delete |
+| Anonymous | A request with no `Authorization` header |
+| ProblemDetail | RFC 7807 JSON error body (`type`, `title`, `status`, `detail`, `instance`) |
+| MCP tool | A function exposed by the MCP server to an AI client |
+| Seed data | The 3 products inserted at backend startup |
+
+## 3. Inputs / data formats
+
+- **FR-IN-01:** Request and response bodies are JSON (`application/json`). Error bodies are `application/problem+json`.
+- **FR-IN-02:** Product request body (create and update):
+
+  | Field | Type | Required | Rule |
+  |-------|------|----------|------|
+  | `name` | string | yes | not blank, max 100 chars |
+  | `description` | string | no | max 500 chars; missing means `null` |
+  | `price` | number (B
+... [truncated 210 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Read]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\.claude\\projects\\C--Users-Coditas-Admin-Desktop-All-Projects-AIEng-MCPServer\\fbdbfc14-9980-4e7e-9380-0a6142ff3d4f\\tool-results\\bbkcumtyb.txt"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+1	# AIEng-MCPServer: Requirements
+2	Status: approved baseline (session 01, 2026-11-25)
+3	
+4	## 1. Purpose and scope
+5	
+6	The project builds a small Product catalogue backend and then an MCP server around it, so an AI client can manage products through MCP tools.
+7	
+8	- **Phase 1, `product-backend`:** a Spring Boot REST API with CRUD on `Product`. Create, read and update are open to anyone. Delete needs the `ADMIN` role.
+9	- **Phase 2, `product-mcp-server`:** a separate Spring AI MCP server (stdio). It exposes the five Product operations as MCP tools by calling the backend over HTTP.
+10	
+11	**Out of scope:**
+12	- user registration and management
+13	- JWT/OAuth
+14	- persistent database
+15	- pagination, search, filtering and sorting options
+16	- PATCH
+17	- categories, images and stock movements
+18	- UI
+19	- deployment and containers
+20	- the H2 web console
+21	- HTTPS
+22	
+23	## 2. Glossary
+24	
+25	| Term | Meaning |
+26	|------|---------|
+27	| Product | A catalogue item with `id`, `name`, `description`, `price`, `quantity` |
+28	| ADMIN / USER | Roles of the in-memory users; only ADMIN can delete |
+29	| Anonymous | A request with no `Authorization` header |
+30	| ProblemDetail | RFC 7807 JSON error body (`type`, `title`, `status`, `detail`, `instance`) |
+31	| MCP tool | A function exposed by the MCP server to an AI client |
+32	| Seed data | The 3 products inserted at backend startup |
+33	
+34	## 3. Inputs / data formats
+35	
+36	- **FR-IN-01:** Request and response bodies are JSON (`application/json`). Error bodies are `application/problem+json`.
+37	- **FR-IN-02:** Product request body (create and update):
+38	
+39	  | Field | Type | Required | Rule |
+40	  |-------|------|----------|------|
+41	  | `name` | string | yes | not blank, max 100 chars |
+42	  | `description` | string | no | max 500 chars; missing means `null` |
+43	  | `price` | number (BigDecimal) | yes | > 0, at most 10 integer digits and 2 decimals |
+44	  | `quantity` | integer | yes | >= 0 |
+45	
+46	  Any `id` sent i
+... [truncated 34414 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && find product-backend/src -type f | head -50; cat product-backend/pom.xml | grep -n artifactId; cat product-backend/src/main/resources/application.properties; grep -n \"^## \" ~/.claude/skills/sdd-workflow/references/templates.md",
+  "description": "Inspect backend source tree, deps, properties, template sections"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+product-backend/src/main/java/com/aieng/productbackend/product/GlobalExceptionHandler.java
+product-backend/src/main/java/com/aieng/productbackend/product/Product.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductController.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductNotFoundException.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductRepository.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductRequest.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductResponse.java
+product-backend/src/main/java/com/aieng/productbackend/product/ProductService.java
+product-backend/src/main/java/com/aieng/productbackend/ProductBackendApplication.java
+product-backend/src/main/resources/application.properties
+product-backend/src/main/resources/data.sql
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java
+product-backend/src/test/java/com/aieng/productbackend/product/ProductControllerErrorTest.java
+product-backend/src/test/java/com/aieng/productbackend/product/ProductRequestTest.java
+product-backend/src/test/resources/reset-products.sql
+9:        <artifactId>aieng-mcpserver</artifactId>
+13:    <artifactId>product-backend</artifactId>
+19:            <artifactId>spring-boot-starter-web</artifactId>
+23:            <artifactId>spring-boot-starter-data-jpa</artifactId>
+27:            <artifactId>spring-boot-starter-validation</artifactId>
+31:            <artifactId>h2</artifactId>
+36:            <artifactId>spring-boot-starter-test</artifactId>
+45:                <artifactId>spring-boot-maven-plugin</artifactId>
+spring.application.name=product-backend
+
+# H2 in-memory database; data resets on restart
+spring.datasource.url=jdbc:h2:mem:products;DB_CLOSE_DELAY=-1
+spring.jpa.hibernate.ddl-auto=create-drop
+# data.sql runs after Hibernate creates the table
+spring.jpa.defer-datasource-initialization=true
+spring.sql.init.mode=always
+sp
+... [truncated 2084 chars]
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Session 05: writing `docs/modules/security/spec.md`. Product module is done (46/46 tests green); requirements already fix most security behaviour, so I'm checking for genuine gaps before asking.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -n 23,42p ~/.claude/skills/sdd-workflow/references/templates.md; cat product-backend/src/main/java/com/aieng/productbackend/product/GlobalExceptionHandler.java | head -60; grep -n \"class\\|@Test\\|void \" product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java | head -15",
+  "description": "Read spec template and exception handler"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+## spec.md — `docs/modules/<module>/spec.md`
+
+```markdown
+# <module> — Specification
+Status: draft | approved (session NN, YYYY-MM-DD)
+Implements: FR-…, NFR-…, EC-…
+
+## 1. Responsibility          (what it does and does not do)
+## 2. Public interface        (types, signatures, records/enums with fields)
+## 3. Behaviour rules
+| ID | Rule | Requirement(s) | Example (input → result) |
+|---|---|---|---|
+| <MODULE>-S01 | … | FR-… | … |
+## 4. Data shapes             (every field, type, nullability)
+## 5. Edge cases              | case | behaviour | sample data |
+## 6. Errors                  (what fails, how it's reported, never-crash guarantees)
+## 7. Out of scope
+## 8. Decision log
+```
+
+package com.aieng.productbackend.product;
+
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.TypeMismatchException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.lang.Nullable;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.net.URI;
+import java.util.LinkedHashMap;
+import 
+... [truncated 2399 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q1/2 — Requirements only cover /api/products/**. What should security do with any other path, e.g. anonymous GET /foo or GET /actuator (which doesn't exist)?",
+      "header": "Other paths",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Permit all (Recommended)",
+          "description": "Only DELETE /api/products/** is protected. Unknown paths fall through to MVC and return the normal 404 ProblemDetail. Simplest, matches 'everything except DELETE is open'."
+        },
+        {
+          "label": "Deny all (403)",
+          "description": "Anything outside /api/products/** is rejected with 403 ProblemDetail, even for admin. Tightest surface."
+        },
+        {
+          "label": "Require authentication",
+          "description": "Paths outside /api/products/** need any valid user; anonymous gets 401, authenticated gets the normal 404."
+        },
+        {
+          "label": "Require ADMIN",
+          "description": "Paths outside /api/products/** need ADMIN; anonymous 401, user 403, admin gets the normal 404."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q1/2 — Requirements only cover /api/products/**. What should security do with any other path, e.g. anonymous GET /foo or GET /actuator (which doesn't exist)?"="Permit all (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: AskUserQuestion]
+{
+  "questions": [
+    {
+      "question": "Q2/2 — FR-SEC-02/05 require ProblemDetail bodies for 401 and 403, and FR-MCP-04's example tool error is '403 Forbidden: Access Denied'. Which title/detail text should the security layer return?",
+      "header": "401/403 text",
+      "multiSelect": false,
+      "options": [
+        {
+          "label": "Fixed short texts (Recommended)",
+          "description": "401: title 'Unauthorized', detail 'Authentication required'. 403: title 'Forbidden', detail 'Access Denied' (matches FR-MCP-04). Same text for anonymous and bad credentials."
+        },
+        {
+          "label": "Distinguish 401 causes",
+          "description": "401 anonymous: 'Authentication required'; 401 bad credentials: 'Invalid username or password'. 403: 'Access Denied'."
+        },
+        {
+          "label": "Spring exception messages",
+          "description": "Use the exception's message as detail, e.g. 'Full authentication is required to access this resource', 'Bad credentials', 'Access Denied'."
+        },
+        {
+          "label": "Role-specific 403",
+          "description": "401 as option 1, but 403 detail says 'ADMIN role required to delete products' (MCP example would then differ from FR-MCP-04)."
+        }
+      ]
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+Your questions have been answered: "Q2/2 — FR-SEC-02/05 require ProblemDetail bodies for 401 and 403, and FR-MCP-04's example tool error is '403 Forbidden: Access Denied'. Which title/detail text should the security layer return?"="Fixed short texts (Recommended)". You can now continue with these answers in mind.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && grep -rn \"delete(\" product-backend/src/test | head; grep -n \"T[0-9]*\\b\" docs/modules/product/test.md | grep -i delete | head",
+  "description": "Find product tests that call DELETE"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:155:            mockMvc.perform(delete(PRODUCTS + "/" + id)).andExpect(status().isNoContent());
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:233:        mockMvc.perform(delete(PRODUCTS + "/2"))
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:244:        mockMvc.perform(delete(PRODUCTS + "/3")).andExpect(status().isNoContent());
+product-backend/src/test/java/com/aieng/productbackend/product/ProductApiIntegrationTest.java:518:        mockMvc.perform(delete(PRODUCTS + "/999"))
+38:| PRODUCT-T04 | S02, S05 | Seed data | `DELETE` ids 1, 2 and 3, then `GET /api/products` | Each delete returns 204. The list is 200 `[]` | EC-20 |
+44:| PRODUCT-T10 | S05 | Seed data | `DELETE /api/products/2` | 204 with an empty body. `GET /api/products/2` returns 404. The list ids are `[1,3]` | (AC-04, admin part) |
+45:| PRODUCT-T11 | S06 | Seed data | `DELETE /api/products/3`, then `POST` twice | The two new products get ids 4 and 5. Id 3 is not reused | `{name:"Pen", price:10, quantity:1}` ×2 |
+80:| PRODUCT-T36 | S14 | Seed data | `DELETE /api/products/999` | 404 `Product with id 999 not found`. The list has 3 items | (EC-17, ignoring auth) |
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+Now writing the spec.
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Write]
+{
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\security\\spec.md",
+  "content": "# security: Specification\nStatus: draft (session 05, 2026-11-25)\nImplements: FR-IN-05, FR-API-05 (auth part), FR-SEC-01..05, FR-ERR-05, NFR-02, NFR-04, EC-15..19, AC-04\n\n## 1. Responsibility\n\nThe `security` module adds Spring Security to `product-backend`. It covers:\n\n- the `SecurityFilterChain`: HTTP Basic, stateless sessions, CSRF disabled\n- the two in-memory users (`admin` / ADMIN, `user` / USER) with BCrypt-encoded passwords\n- the authorization rule: only `DELETE /api/products/**` needs the `ADMIN` role; every other request is open\n- ProblemDetail bodies for the 401 and 403 responses the security layer produces\n\nIt does **not** change any product behaviour. Once a request passes the filter chain, the `product` module\n(PRODUCT-S01..S19) handles it exactly as before. It also doesn't cover how the MCP server sends credentials\n(`mcp-server` module).\n\n## 2. Public interface\n\nPackage: `com.aieng.productbackend.security`.\n\n```java\n@Configuration @EnableWebSecurity\nclass SecurityConfig {\n    @Bean SecurityFilterChain securityFilterChain(HttpSecurity http,\n                                                  ProblemDetailAuthenticationEntryPoint entryPoint,\n                                                  ProblemDetailAccessDeniedHandler accessDeniedHandler);\n    @Bean PasswordEncoder passwordEncoder();            // BCryptPa
+... [truncated 10480 chars]
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+File created successfully at: C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\security\spec.md (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\docs\\modules\\security\\spec.md",
+  "old_string": "returns `admin` with a password starting with `{bcrypt}` or a `$2` BCrypt hash, and",
+  "new_string": "returns `admin` with a BCrypt hash (starts with `$2`), and"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Edit]
+{
+  "replace_all": false,
+  "file_path": "C:\\Users\\Coditas-Admin\\Desktop\\All Projects\\AIEng-MCPServer\\CLAUDE.md",
+  "old_string": "- **Security edge cases:** wrong credentials return 401 even on open endpoints. Authorization runs before lookup, so a USER deleting an unknown id gets 403.",
+  "new_string": "- **Security edge cases:** wrong credentials return 401 even on open endpoints. Authorization runs before lookup, so a USER deleting an unknown id gets 403.\n- **Security scope and errors (session 05):** only `DELETE /api/products/**` is protected; every other path (including ones outside `/api/products`) is open. 401 is `Unauthorized` / `Authentication required` (same for anonymous and bad credentials); 403 is `Forbidden` / `Access Denied`."
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && git add CLAUDE.md && git commit -q -m \"docs: record session 05 decisions in CLAUDE.md\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git add docs/modules/security/spec.md && git commit -q -m \"docs(security): add spec\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -2 && git remote -v",
+  "description": "Commit CLAUDE.md decisions and security spec"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\docs\modules\security\spec.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+The file C:\Users\Coditas-Admin\Desktop\All Projects\AIEng-MCPServer\CLAUDE.md has been updated successfully. (file state is current in your context — no need to Read it back)
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+warning: in the working copy of 'CLAUDE.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'docs/modules/security/spec.md', LF will be replaced by CRLF the next time Git touches it
+d19dcfc docs(security): add spec
+f9ff12e docs: record session 05 decisions in CLAUDE.md
+
+--------------------------------------------------------------------------------
+
+ASSISTANT:
+I've written the security spec for session 05 and committed it to `main` (`docs/modules/security/spec.md`, marked draft until you approve it). There's no remote, so nothing was pushed.
+
+**What it covers:** 10 rules, SECURITY-S01 to S10:
+- **Access:** HTTP Basic login, passwords stored as BCrypt hashes. Only `DELETE /api/products/**` needs ADMIN; everything else is open.
+- **401:** anonymous callers get 401 on DELETE, and wrong credentials get 401 on any endpoint, including open ones.
+- **403:** a USER trying to DELETE gets 403. The role check runs before the product lookup, so a USER deleting id 999 or `abc` gets 403, not 404 or 400.
+- **Sessions:** the API is stateless (no session cookie) and CSRF is off.
+- **Other headers:** a `Bearer` token is ignored and the request counts as anonymous.
+
+The spec also has a table of every endpoint against anonymous, `user`, `admin` and a wrong password, plus the edge cases EC-15 to EC-19.
+
+**Your answers:**
+1. **Paths outside `/api/products`:** permit all, so an unknown path gets the normal 404 error response.
+2. **401/403 error text:** 401 is `Unauthorized` / `Authentication required` for both anonymous and wrong credentials. 403 is `Forbidden` / `Access Denied`, which matches the MCP example in FR-MCP-04.
+
+**Decided without asking (veto any of these):**
+- **Where the ADMIN rule lives:** a URL rule in Spring Security's request filters, not `@PreAuthorize`. This gives the "check role before lookup" behaviour without touching the product module.
+- **Users:** hardcoded in `SecurityConfig` and not configurable through properties.
+- **Login challenge header:** `WWW-Authenticate: Basic realm="Realm"` (Spring's default).
+- **Security response headers:** Spring Security's defaults stay on and aren't tested.
+- **Existing product tests:** PRODUCT-T04, T10, T11 and T36 call DELETE. They will send `admin/admin123`, and their expected results stay the same.
+- **Username case:** usernames match regardless of case and passwords are case-sensitive (Spring's default). Not tested.
+
+**Commits:**
+- `f9ff12e` docs: record session 05 decisions in CLAUDE.md
+- `d19dcfc` docs(security): add spec
+
+Tell me what to change, or approve it and I'll mark it approved. The next step is `docs/modules/security/test.md`. Say "end the session" when you want me to export the session log.
+
+--------------------------------------------------------------------------------
+
+USER:
+approve the spec and end this session here
+
+--------------------------------------------------------------------------------
+
+[TOOL CALL: Bash]
+{
+  "command": "cd \"C:/Users/Coditas-Admin/Desktop/All Projects/AIEng-MCPServer\" && sed -i 's/^Status: draft (session 05, 2026-11-25)/Status: approved (session 05, 2026-11-25)/' docs/modules/security/spec.md && head -2 docs/modules/security/spec.md && git add docs/modules/security/spec.md && git commit -q -m \"docs(security): mark spec approved\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\" && git log --oneline -1",
+  "description": "Mark security spec approved and commit"
+}
+
+--------------------------------------------------------------------------------
+
+[TOOL RESULT]
+# security: Specification
+Status: approved (session 05, 2026-11-25)
+warning: in the working copy of 'docs/modules/security/spec.md', LF will be replaced by CRLF the next time Git touches it
+6308c07 docs(security): mark spec approved
+[This command modified 1 file you've previously read: docs\modules\security\spec.md. Call Read before editing.]
