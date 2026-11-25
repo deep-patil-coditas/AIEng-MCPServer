@@ -32,8 +32,8 @@ function parseArgs(argv) {
 }
 
 function projectTranscriptDir(repoRoot) {
-  // Claude Code stores transcripts under ~/.claude/projects/<cwd with separators replaced by '-'>
-  const slug = repoRoot.replace(/[:\\/]/g, "-");
+  // Claude Code stores transcripts under ~/.claude/projects/<cwd with every non-alphanumeric char replaced by '-'>
+  const slug = repoRoot.replace(/[^a-zA-Z0-9]/g, "-");
   return path.join(os.homedir(), ".claude", "projects", slug);
 }
 
